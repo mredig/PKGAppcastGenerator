@@ -85,8 +85,7 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			channelTitle: channelTitle ?? "App Changelog",
 			downloadURLPrefix: downloadURLPrefix)
 
-//		try appcastData.write(to: outputPath)
-		print(String(data: appcastData, encoding: .utf8)!)
+		try appcastData.write(to: outputPath)
 	}
 }
 
