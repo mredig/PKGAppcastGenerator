@@ -47,29 +47,46 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 	@Option(
 		name: .shortAndLong,
 		help: """
-			The url the appcast will be hosted at.
-			""",
-		transform: {
-			guard let url = URL(string: $0) else {
-				throw CustomError(message: "The provided appcast url is not a valid url")
-			}
-			return url
-		})
-	var appcastURL: URL
-
-	@Option(
-		name: .shortAndLong,
-		help: """
 			The title for the channel. Defaults to "App Changelog"
 			""")
 	var channelTitle: String?
 
+	@Option(
+		name: .shortAndLong,
+		help: "Where to save the output file. Defaults to `./appcast.xml`.",
+		transform: {
+			URL(filePath: $0, relativeTo: .currentDirectory())
+		})
+	var outputPath: URL?
+
 	mutating func run() async throws {
-		try PKGAppcastGeneratorCore.asdf()
+		var outputPath = self.outputPath ?? .currentDirectory()
+		if outputPath.hasDirectoryPath {
+			outputPath.appendPathComponent("appcast", conformingTo: .xml)
+		}
+
+		var previousData: Data?
+		if let existingAppcastFile {
+			guard existingAppcastURL == nil else {
+				throw CustomError(message: "Cannot have both --existingAppcastFile and --existingAppcastURL")
+			}
+			previousData = try Data(contentsOf: existingAppcastFile)
+		}
+		if let existingAppcastURL {
+			guard existingAppcastFile == nil else {
+				throw CustomError(message: "Cannot have both --existingAppcastFile and --existingAppcastURL")
+			}
+			previousData = try await URLSession.shared.data(from: existingAppcastURL).0
+		}
+
+		let appcastData = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: directory,
+			previousAppcastData: previousData,
+			channelTitle: channelTitle ?? "App Changelog",
+			downloadURLPrefix: downloadURLPrefix)
+
+//		try appcastData.write(to: outputPath)
+		print(String(data: appcastData, encoding: .utf8)!)
 	}
 }
 
-
-struct CustomError: Error {
-	let message: String
-}

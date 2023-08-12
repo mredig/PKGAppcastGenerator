@@ -1,11 +1,11 @@
 import Foundation
 
 public struct AppcastChannel: Codable {
-	public let title: String
-	public let link: URL?
-	public let description: String?
-	public let language: String?
-	public let items: [AppcastItem]
+	public var title: String
+	public var link: URL?
+	public var description: String?
+	public var language: String?
+	public var items: [AppcastItem]
 
 	public init(
 		title: String,

@@ -8,7 +8,7 @@ public struct AppcastItem: Codable {
 	public let fullReleaseNotesLink: URL?
 	public let version: String
 	public let shortVersionString: String?
-	public let description: String
+	public let description: String?
 	public let publishedDate: Date
 	public let enclosure: Enclosure
 	public let minimumSystemVersion: String?
@@ -27,7 +27,7 @@ public struct AppcastItem: Codable {
 		fullReleaseNotesLink: URL? = nil,
 		version: String,
 		shortVersionString: String? = nil,
-		description: String,
+		description: String?,
 		publishedDate: Date,
 		enclosure: AppcastItem.Enclosure,
 		minimumSystemVersion: String? = nil,
@@ -89,6 +89,26 @@ public struct AppcastItem: Codable {
 			case edSignature = "sparkle:edSignature"
 			case installationType = "sparkle:installationType"
 		}
+	}
+}
 
+public extension AppcastItem {
+	init(from appCast: JSONAppcastItem, enclosure: Enclosure) {
+		self.init(
+			title: appCast.title,
+			link: appCast.link,
+			releaseNotesLink: appCast.releaseNotesLink,
+			fullReleaseNotesLink: appCast.fullReleaseNotesLink,
+			version: appCast.version,
+			shortVersionString: appCast.shortVersionString,
+			description: appCast.description,
+			publishedDate: Date(),
+			enclosure: enclosure,
+			minimumSystemVersion: appCast.minimumSystemVersion,
+			maximumSystemVersion: appCast.maximumSystemVersion,
+			minimumAutoUpdateVersion: appCast.minimumAutoUpdateVersion,
+			ignoreSkippedUpgradesBelowVersion: appCast.ignoreSkippedUpgradesBelowVersion,
+			criticalUpdate: appCast.criticalUpdate,
+			phasedRolloutInterval: appCast.phasedRolloutInterval)
 	}
 }
