@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "PKGAppcastGenerator",
+	platforms: [
+		.macOS(.v13)
+	],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
 		.package(url: "https://github.com/CoreOffice/XMLCoder.git", from: "0.17.1"),
