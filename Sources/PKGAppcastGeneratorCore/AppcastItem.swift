@@ -75,13 +75,25 @@ public struct AppcastItem: Codable {
 		public let url: URL
 		public let length: Int
 		public let type: String
-		public let edSignature: String
+		public let edSignature: String?
 		public let installationType: String?
 
 		static public func nodeDecoding(for key: CodingKey) -> XMLDecoder.NodeDecoding { .attribute }
-
 		static public func nodeEncoding(for key: CodingKey) -> XMLEncoder.NodeEncoding { .attribute }
-		
+
+		public init(
+			url: URL,
+			length: Int,
+			type: String,
+			edSignature: String? = nil,
+			installationType: String? = nil) {
+				self.url = url
+				self.length = length
+				self.type = type
+				self.edSignature = edSignature
+				self.installationType = installationType
+			}
+
 		enum CodingKeys: String, CodingKey {
 			case url
 			case length

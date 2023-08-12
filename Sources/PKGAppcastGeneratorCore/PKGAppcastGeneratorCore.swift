@@ -109,7 +109,6 @@ public enum PKGAppcastGeneratorCore {
 						url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
 						length: fileSize,
 						type: "application/octet-stream",
-						edSignature: "hahahaha",
 						installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
 					return AppcastItem(from: jsonItem, enclosure: enclosure)
 				}
