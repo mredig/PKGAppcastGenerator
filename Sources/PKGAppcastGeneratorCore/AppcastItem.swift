@@ -76,7 +76,7 @@ public struct AppcastItem: Codable {
 		public let length: Int
 		public let type: String
 		public let edSignature: String?
-		public let installationType: String?
+		public var installationType: String?
 
 		static public func nodeDecoding(for key: CodingKey) -> XMLDecoder.NodeDecoding { .attribute }
 		static public func nodeEncoding(for key: CodingKey) -> XMLEncoder.NodeEncoding { .attribute }
@@ -106,6 +106,10 @@ public struct AppcastItem: Codable {
 
 public extension AppcastItem {
 	init(from appCast: JSONAppcastItem, enclosure: Enclosure) {
+		var enclosure = enclosure
+		if appCast.isPackage == true {
+			enclosure.installationType = "package"
+		}
 		self.init(
 			title: appCast.title,
 			link: appCast.link,

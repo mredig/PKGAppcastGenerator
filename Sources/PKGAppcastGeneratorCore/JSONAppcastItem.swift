@@ -16,4 +16,6 @@ public struct JSONAppcastItem: Codable {
 	/// This value would be `1.2.4` in `<sparkle:criticalUpdate sparkle:version="1.2.4"></sparkle:criticalUpdate>`
 	public let criticalUpdate: String?
 	public let phasedRolloutInterval: Int?
+
+	public let isPackage: Bool?
 }
