@@ -59,6 +59,27 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 		})
 	var outputPath: URL?
 
+	@Option(
+		name: .long,
+		help: "Path to Sparkle's `sign_update` executable",
+		transform: {
+			URL(filePath: $0, relativeTo: .currentDirectory())
+		})
+	var signUpdatePath: URL?
+
+	@Option(
+		name: .long,
+		help: "Account value for Sparkle's `sign_update` executable")
+	var signUpdateAccount: String?
+
+	@Option(
+		name: .long,
+		help: "Path to EdDSA file for `sign_update` executable",
+		transform: {
+			URL(filePath: $0, relativeTo: .currentDirectory())
+		})
+	var signUpdateKeyFile: URL?
+
 	mutating func run() async throws {
 		var outputPath = self.outputPath ?? .currentDirectory()
 		if outputPath.hasDirectoryPath {
@@ -83,9 +104,48 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: previousData,
 			channelTitle: channelTitle ?? "App Changelog",
+			signatureGenerator: signaureGenerator,
 			downloadURLPrefix: downloadURLPrefix)
 
 		try appcastData.write(to: outputPath)
+	}
+
+	private func signaureGenerator(fileToSign: URL) throws -> String? {
+		guard let signUpdatePath else { return nil }
+
+		var args: [String] = ["-p"]
+		if let signUpdateAccount {
+			args.append("--account")
+			args.append(signUpdateAccount)
+		}
+
+		if let signUpdateKeyFile {
+			args.append("--ed-key-file")
+			args.append(signUpdateKeyFile.path(percentEncoded: false))
+		}
+
+		return try Self
+			.runSignatureGenerator(pathToExe: signUpdatePath, arguments: args, fileToSign: fileToSign)
+			.trimmingCharacters(in: .whitespacesAndNewlines)
+	}
+
+	private static func runSignatureGenerator(pathToExe: URL, arguments: [String], fileToSign: URL) throws -> String {
+		let stdOut = Pipe()
+
+		let process = Process()
+		process.standardOutput = stdOut
+		process.standardError = stdOut
+		process.arguments = arguments + [fileToSign.path(percentEncoded: false)]
+		process.executableURL = pathToExe
+
+		try process.run()
+		process.waitUntilExit()
+
+		guard
+			let out = try stdOut.fileHandleForReading.readToEnd()
+		else { return "" }
+
+		return String(data: out, encoding: .utf8) ?? ""
 	}
 }
 

@@ -53,6 +53,7 @@ public enum PKGAppcastGeneratorCore {
 		fromContentsOfDirectory contentsOfDirectory: URL,
 		previousAppcastData: Data?,
 		channelTitle: String,
+		signatureGenerator: (URL) throws -> String?,
 		downloadURLPrefix: URL) throws -> Data {
 
 			let directoryContents = try FileManager.default.contentsOfDirectory(at: contentsOfDirectory, includingPropertiesForKeys: nil)
@@ -109,6 +110,7 @@ public enum PKGAppcastGeneratorCore {
 						url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
 						length: fileSize,
 						type: "application/octet-stream",
+						edSignature: try signatureGenerator(pkgFile),
 						installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
 					return AppcastItem(from: jsonItem, enclosure: enclosure)
 				}
