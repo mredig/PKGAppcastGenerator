@@ -34,7 +34,7 @@ public enum PKGAppcastGeneratorCore {
 		let appCast = Appcast(channels: [channel])
 
 		let encoder = XMLEncoder()
-		encoder.dateEncodingStrategy = .iso8601
+		encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)
 		encoder.outputFormatting = .prettyPrinted
 
 		let data = try encoder.encode(
