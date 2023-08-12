@@ -57,7 +57,7 @@ public struct AppcastItem: Codable {
 		case title
 		case link
 		case releaseNotesLink = "sparkle:releaseNotesLink"
-		case fullReleaseNotesLink
+		case fullReleaseNotesLink = "sparkle:fullReleaseNotesLink"
 		case version = "sparkle:version"
 		case shortVersionString = "sparkle:shortVersionString"
 		case description
@@ -67,8 +67,8 @@ public struct AppcastItem: Codable {
 		case maximumSystemVersion = "sparkle:maximumSystemVersion"
 		case minimumAutoUpdateVersion = "sparkle:minimumAutoUpdateVersion"
 		case ignoreSkippedUpgradesBelowVersion = "sparkle:ignoreSkippedUpgradesBelowVersion"
-		case criticalUpdate
-		case phasedRolloutInterval
+		case criticalUpdate = "sparkle:criticalUpdate"
+		case phasedRolloutInterval = "sparkle:phasedRolloutInterval"
 	}
 
 	public struct Enclosure: Codable, DynamicNodeDecoding, DynamicNodeEncoding {
@@ -87,7 +87,7 @@ public struct AppcastItem: Codable {
 			case length
 			case type
 			case edSignature = "sparkle:edSignature"
-			case installationType
+			case installationType = "sparkle:installationType"
 		}
 
 	}
