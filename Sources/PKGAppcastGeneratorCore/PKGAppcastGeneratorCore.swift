@@ -116,7 +116,7 @@ public enum PKGAppcastGeneratorCore {
 				}
 
 			appCast.channel.title = channelTitle
-			appCast.channel.items = items
+			appCast.channel.items = items + appCast.channel.items
 
 			let encoder = XMLEncoder()
 			encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)
