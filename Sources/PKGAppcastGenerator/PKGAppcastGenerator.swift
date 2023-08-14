@@ -139,7 +139,22 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 		process.executableURL = pathToExe.absoluteURL
 		process.currentDirectoryURL = .currentDirectory()
 
-		try process.run()
+		do {
+			try process.run()
+		} catch let error as CocoaError {
+			let code = error.code
+			switch code {
+			case .fileReadNoSuchFile:
+				print("file read none: \(error)")
+			case .fileNoSuchFile:
+				print("no such file: \(error)")
+			default: print("other: \(code)")
+			}
+			throw CocoaError(code)
+		} catch {
+			print("caught the error: \(error)")
+			throw error
+		}
 		process.waitUntilExit()
 
 		guard
