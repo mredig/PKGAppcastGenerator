@@ -135,8 +135,9 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 		let process = Process()
 		process.standardOutput = stdOut
 		process.standardError = stdOut
-		process.arguments = arguments + [fileToSign.path(percentEncoded: false)]
-		process.executableURL = pathToExe
+		process.arguments = arguments + [fileToSign.absoluteURL.path(percentEncoded: false)]
+		process.executableURL = pathToExe.absoluteURL
+		process.currentDirectoryURL = .currentDirectory()
 
 		try process.run()
 		process.waitUntilExit()
