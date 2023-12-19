@@ -12,13 +12,14 @@ public struct AppcastChannel: Codable {
 		link: URL? = nil,
 		description: String? = nil,
 		language: String? = nil,
-		items: [AppcastItem]) {
-			self.title = title
-			self.link = link
-			self.description = description
-			self.language = language
-			self.items = items
-		}
+		items: [AppcastItem]
+	) {
+		self.title = title
+		self.link = link
+		self.description = description
+		self.language = language
+		self.items = items
+	}
 
 	enum CodingKeys: String, CodingKey {
 		case title

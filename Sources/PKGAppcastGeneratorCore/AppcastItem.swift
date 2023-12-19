@@ -35,23 +35,24 @@ public struct AppcastItem: Codable {
 		minimumAutoUpdateVersion: String? = nil,
 		ignoreSkippedUpgradesBelowVersion: String? = nil,
 		criticalUpdate: String? = nil,
-		phasedRolloutInterval: Int? = nil) {
-			self.title = title
-			self.link = link
-			self.releaseNotesLink = releaseNotesLink
-			self.fullReleaseNotesLink = fullReleaseNotesLink
-			self.version = version
-			self.shortVersionString = shortVersionString
-			self.description = description
-			self.publishedDate = publishedDate
-			self.enclosure = enclosure
-			self.minimumSystemVersion = minimumSystemVersion
-			self.maximumSystemVersion = maximumSystemVersion
-			self.minimumAutoUpdateVersion = minimumAutoUpdateVersion
-			self.ignoreSkippedUpgradesBelowVersion = ignoreSkippedUpgradesBelowVersion
-			self.criticalUpdate = criticalUpdate
-			self.phasedRolloutInterval = phasedRolloutInterval
-		}
+		phasedRolloutInterval: Int? = nil
+	) {
+		self.title = title
+		self.link = link
+		self.releaseNotesLink = releaseNotesLink
+		self.fullReleaseNotesLink = fullReleaseNotesLink
+		self.version = version
+		self.shortVersionString = shortVersionString
+		self.description = description
+		self.publishedDate = publishedDate
+		self.enclosure = enclosure
+		self.minimumSystemVersion = minimumSystemVersion
+		self.maximumSystemVersion = maximumSystemVersion
+		self.minimumAutoUpdateVersion = minimumAutoUpdateVersion
+		self.ignoreSkippedUpgradesBelowVersion = ignoreSkippedUpgradesBelowVersion
+		self.criticalUpdate = criticalUpdate
+		self.phasedRolloutInterval = phasedRolloutInterval
+	}
 
 	enum CodingKeys: String, CodingKey {
 		case title
@@ -86,14 +87,15 @@ public struct AppcastItem: Codable {
 			length: Int,
 			type: String,
 			edSignature: String? = nil,
-			installationType: String? = nil) {
-				self.url = url
-				self.length = length
-				self.type = type
-				self.edSignature = edSignature
-				self.installationType = installationType
-			}
-
+			installationType: String? = nil
+		) {
+			self.url = url
+			self.length = length
+			self.type = type
+			self.edSignature = edSignature
+			self.installationType = installationType
+		}
+		
 		enum CodingKeys: String, CodingKey {
 			case url
 			case length
