@@ -84,16 +84,6 @@ public enum PKGAppcastGeneratorCore {
 				throw CustomError(message: "No valid package for \(jsonURL.lastPathComponent)")
 			}
 
-		var appCast: Appcast
-		if let previousAppcastData {
-			let decoder = XMLDecoder()
-			decoder.dateDecodingStrategy = .formatted(Self.dateFormatter)
-
-			appCast = try decoder.decode(Appcast.self, from: previousAppcastData)
-		} else {
-			appCast = Appcast(channel: AppcastChannel(title: channelTitle, items: []))
-		}
-
 		let jsonDecoder = JSONDecoder()
 		let items = try zip(jsonFiles, pkgFiles)
 			.map {
@@ -115,6 +105,16 @@ public enum PKGAppcastGeneratorCore {
 					installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
 				return AppcastItem(from: jsonItem, enclosure: enclosure)
 			}
+
+		var appCast: Appcast
+		if let previousAppcastData {
+			let decoder = XMLDecoder()
+			decoder.dateDecodingStrategy = .formatted(Self.dateFormatter)
+
+			appCast = try decoder.decode(Appcast.self, from: previousAppcastData)
+		} else {
+			appCast = Appcast(channel: AppcastChannel(title: channelTitle, items: []))
+		}
 
 		appCast.channel.title = channelTitle
 		appCast.channel.appendItems(items)
