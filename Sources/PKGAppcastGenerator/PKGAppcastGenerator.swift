@@ -36,9 +36,7 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			Backup URL that a user can go manually download the updates. The json files include this already, but if you have \
 			any non json archives as updates, this is a required value.
 			""",
-		transform: {
-			URL(filePath: $0, relativeTo: .currentDirectory())
-		})
+		transform: { URL(string: $0) })
 	var downloadsLink: URL?
 
 	@Option(
