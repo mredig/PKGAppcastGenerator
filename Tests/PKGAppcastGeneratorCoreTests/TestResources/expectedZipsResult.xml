@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+    <channel>
+        <title>Appcast</title>
+        <item>
+            <title>2.6.6</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>38</sparkle:version>
+            <sparkle:shortVersionString>2.6.6</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-2.6.6.zip" length="1477" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.5</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>2.1.7</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>31</sparkle:version>
+            <sparkle:shortVersionString>2.1.7</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-2.1.7.zip" length="1477" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.4</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>1.16.8</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>24</sparkle:version>
+            <sparkle:shortVersionString>1.16.8</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-1.16.8.zip" length="1529" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.3</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>1.11.9</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>17</sparkle:version>
+            <sparkle:shortVersionString>1.11.9</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-1.11.9.zip" length="1476" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.2</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>1.7.0</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>10</sparkle:version>
+            <sparkle:shortVersionString>1.7.0</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-1.7.0.zip" length="1472" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.1</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>1.2.1</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-1.2.1.zip" length="1526" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+        </item>
+    </channel>
+</rss>

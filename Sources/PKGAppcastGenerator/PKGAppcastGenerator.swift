@@ -31,6 +31,17 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 	var existingAppcastFile: URL?
 
 	@Option(
+		name: .long,
+		help: """
+			Backup URL that a user can go manually download the updates. The json files include this already, but if you have \
+			any non json archives as updates, this is a required value.
+			""",
+		transform: {
+			URL(filePath: $0, relativeTo: .currentDirectory())
+		})
+	var downloadsLink: URL?
+
+	@Option(
 		name: .shortAndLong,
 		help: """
 			The root url download prefix of the file(s). If a given update will be available at \
@@ -104,6 +115,7 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: previousData,
 			channelTitle: channelTitle ?? "App Changelog",
+			downloadsLink: downloadsLink,
 			signatureGenerator: signaureGenerator,
 			downloadURLPrefix: downloadURLPrefix)
 

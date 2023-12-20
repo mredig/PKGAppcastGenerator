@@ -75,7 +75,7 @@ public struct AppcastItem: Codable {
 	public struct Enclosure: Codable, DynamicNodeDecoding, DynamicNodeEncoding {
 		public let url: URL
 		public let length: Int
-		public let type: String
+		public let mimeType: String
 		public let edSignature: String?
 		public var installationType: String?
 
@@ -85,13 +85,13 @@ public struct AppcastItem: Codable {
 		public init(
 			url: URL,
 			length: Int,
-			type: String,
+			mimeType: String,
 			edSignature: String? = nil,
 			installationType: String? = nil
 		) {
 			self.url = url
 			self.length = length
-			self.type = type
+			self.mimeType = mimeType
 			self.edSignature = edSignature
 			self.installationType = installationType
 		}
@@ -99,7 +99,7 @@ public struct AppcastItem: Codable {
 		enum CodingKeys: String, CodingKey {
 			case url
 			case length
-			case type
+			case mimeType = "type"
 			case edSignature = "sparkle:edSignature"
 			case installationType = "sparkle:installationType"
 		}

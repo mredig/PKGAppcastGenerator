@@ -1,6 +1,7 @@
 import Foundation
 import XMLCoder
 import SwiftPizzaSnips
+import ZIPFoundation
 
 public enum PKGAppcastGeneratorCore {
 	package static let dateFormatter: DateFormatter = {
@@ -21,7 +22,7 @@ public enum PKGAppcastGeneratorCore {
 			enclosure: AppcastItem.Enclosure(
 				url: URL(string: "https://foo.com/example.pkg")!,
 				length: 500,
-				type: "application/octet-stream",
+				mimeType: "application/octet-stream",
 				edSignature: "pretendSignature",
 				installationType: "package"))
 
@@ -54,6 +55,7 @@ public enum PKGAppcastGeneratorCore {
 		fromContentsOfDirectory contentsOfDirectory: URL,
 		previousAppcastData: Data?,
 		channelTitle: String,
+		downloadsLink: URL?,
 		signatureGenerator: (URL) throws -> String?,
 		downloadURLPrefix: URL
 	) throws -> Data {
@@ -97,6 +99,12 @@ public enum PKGAppcastGeneratorCore {
 			downloadURLPrefix: downloadURLPrefix,
 			signatureGenerator: signatureGenerator)
 
+		let embeddedInfoItems = try handleEmbeddedInfoItems(
+			embeddedUpdaterFiles: embeddedUpdaterFiles,
+			downloadsLink: downloadsLink,
+			downloadURLPrefix: downloadURLPrefix,
+			signatureGenerator: signatureGenerator)
+
 		var appCast: Appcast
 		if let previousAppcastData {
 			let decoder = XMLDecoder()
@@ -109,6 +117,7 @@ public enum PKGAppcastGeneratorCore {
 
 		appCast.channel.title = channelTitle
 		appCast.channel.appendItems(jsonItems)
+		appCast.channel.appendItems(embeddedInfoItems)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
 
 		let encoder = XMLEncoder()
@@ -134,7 +143,7 @@ public enum PKGAppcastGeneratorCore {
 		signatureGenerator: (URL) throws -> String?
 	) throws -> [AppcastItem] {
 		let jsonDecoder = JSONDecoder()
-		
+
 		guard
 			jsonFiles.count == jsonPKGFiles.count
 		else { throw CustomError(message: "Mismatch count of update files and their json counterparts.") }
@@ -156,11 +165,127 @@ public enum PKGAppcastGeneratorCore {
 			let enclosure = AppcastItem.Enclosure(
 				url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
 				length: fileSize,
-				type: "application/octet-stream",
+				mimeType: "application/octet-stream",
 				edSignature: try signatureGenerator(pkgFile),
 				installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
 			return AppcastItem(from: jsonItem, enclosure: enclosure)
 		}
 		return items
+	}
+
+	private static func handleEmbeddedInfoItems(
+		embeddedUpdaterFiles: [URL],
+		downloadsLink: URL?,
+		downloadURLPrefix: URL,
+		signatureGenerator: (URL) throws -> String?
+	) throws -> [AppcastItem] {
+		guard embeddedUpdaterFiles.isOccupied else { return [] }
+		guard let downloadsLink else {
+			throw CustomError(message: "With embedded files, you need to provide a downloads link! See help.")
+		}
+
+		return try embeddedUpdaterFiles.map {
+			switch $0.pathExtension.lowercased() {
+			case "zip":
+				try handleZipEmbeddedInfoItem(
+					zipFile: $0,
+					downloadsLink: downloadsLink,
+					downloadURLPrefix: downloadURLPrefix,
+					signatureGenerator: signatureGenerator)
+			default:
+				throw CustomError(message: "Unexpected file format: \($0)")
+			}
+		}
+	}
+
+	private static func handleZipEmbeddedInfoItem(
+		zipFile: URL,
+		downloadsLink: URL,
+		downloadURLPrefix: URL,
+		signatureGenerator: (URL) throws -> String?
+	) throws -> AppcastItem {
+		let zipArchive = try Archive(url: zipFile, accessMode: .read)
+
+		let zipResources = try zipFile.resourceValues(forKeys: [.fileSizeKey])
+		let zipSize = try zipResources.fileSize.unwrap()
+
+		let (directories, files) = try zipArchive.reduce(into: ([Entry](), [Entry]())) {
+			switch $1.type {
+			case .directory:
+				$0.0.append($1)
+			case .file:
+				$0.1.append($1)
+			case .symlink:
+				try print("symlink: \($1.pathURL.unwrap())")
+				break
+			}
+		}
+
+		let sortedDirectories = directories.sorted(by: {
+			$0.componentCount < $1.componentCount
+		})
+
+		var appEntry: Entry?
+		var level = 0
+		for directory in sortedDirectories {
+			let newLevel = max(level, directory.componentCount)
+			defer { level = newLevel }
+			if newLevel > level, appEntry != nil {
+				break
+			}
+			
+			guard
+				directory.pathURL?.pathExtension.lowercased() == "app"
+			else { continue }
+			guard
+				appEntry == nil
+			else {
+				throw CustomError(
+					message: "Too many app bundles in this package. You only have one app per archive (not including embedded helper apps)")
+			}
+
+			appEntry = directory
+		}
+
+		guard let appEntry else { throw CustomError(message: "No app bundle found in this package!") }
+		let infoPath = try appEntry.pathURL.unwrap().appending(components: "Contents", "Info.plist")
+		guard
+			let infoEntry = files.first(where: { $0.pathURL == infoPath })
+		else { throw CustomError(message: "App bundle doesn't have an Info.plist. Something is corrupt!") }
+
+		var accumulator = Data()
+		_ = try zipArchive.extract(infoEntry, skipCRC32: true) { newData in
+			accumulator.append(newData)
+		}
+
+		let infoPlist = try (PropertyListSerialization.propertyList(from: accumulator, format: nil) as? [String: Any]).unwrap()
+
+		let buildNumber = try (infoPlist["CFBundleVersion"] as? String).unwrap()
+		let versionNumber = try (infoPlist["CFBundleShortVersionString"] as? String).unwrap()
+		let systemRequirement = infoPlist["LSMinimumSystemVersion"] as? String
+
+		let enclosure = try AppcastItem.Enclosure(
+			url: downloadURLPrefix.appending(component: zipFile.lastPathComponent),
+			length: zipSize,
+			mimeType: "application/zip",
+			edSignature: signatureGenerator(zipFile),
+			installationType: nil)
+
+		return .init(
+			title: versionNumber,
+			link: downloadsLink,
+			releaseNotesLink: nil,
+			fullReleaseNotesLink: nil,
+			version: buildNumber,
+			shortVersionString: versionNumber,
+			description: nil,
+			publishedDate: .now,
+			enclosure: enclosure,
+			minimumSystemVersion: systemRequirement,
+			maximumSystemVersion: nil,
+			minimumAutoUpdateVersion: nil,
+			ignoreSkippedUpgradesBelowVersion: nil,
+			criticalUpdate: nil,
+			phasedRolloutInterval: nil)
 	}
 }
