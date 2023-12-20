@@ -117,7 +117,7 @@ public enum PKGAppcastGeneratorCore {
 			}
 
 		appCast.channel.title = channelTitle
-		appCast.channel.items = items + appCast.channel.items
+		appCast.channel.appendItems(items)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
 
 		let encoder = XMLEncoder()

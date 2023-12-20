@@ -29,6 +29,19 @@ public struct AppcastChannel: Codable {
 		case items = "item"
 	}
 
+	public mutating func appendItems(_ items: [AppcastItem]) {
+		let currentItems = self.items
+		for item in items {
+			guard
+				currentItems.contains(where: { $0.enclosure.url == item.enclosure.url }) == false
+			else {
+				print("Not appending \(item) as it's already included")
+				continue
+			}
+			self.items.append(item)
+		}
+	}
+
 	public mutating func sortItems(
 		by comparison: (AppcastItem, AppcastItem) throws -> Bool = Self.defaultSortItems
 	) rethrows {
