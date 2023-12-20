@@ -1,0 +1,12 @@
+# PKGAppcastGenerator Changelog:
+
+
+### 0.2.0
+
+* Added support for zip files, without the requirement for a json companion file!
+* Added tests - more realible builds and less likely to produce bugs/regressions.
+* Sort entries before outputting appcast.
+
+### 0.1.4:
+
+* improved error output
