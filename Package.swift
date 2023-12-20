@@ -12,6 +12,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
 		.package(url: "https://github.com/CoreOffice/XMLCoder.git", from: "0.17.1"),
 		.package(url: "https://github.com/mredig/PizzaMacros.git", .upToNextMinor(from: "0.1.0")),
+		.package(url: "https://github.com/mredig/SwiftPizzaSnips.git", .upToNextMinor(from: "0.2.17")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -27,6 +28,7 @@ let package = Package(
 			name: "PKGAppcastGeneratorCore",
 			dependencies: [
 				"XMLCoder",
+				"SwiftPizzaSnips",
 			]),
 		.testTarget(
 			name: "PKGAppcastGeneratorCoreTests",

@@ -1,5 +1,6 @@
 import Foundation
 import XMLCoder
+import SwiftPizzaSnips
 
 public enum PKGAppcastGeneratorCore {
 	package static let dateFormatter: DateFormatter = {
@@ -60,51 +61,41 @@ public enum PKGAppcastGeneratorCore {
 		let directoryContents = try FileManager.default.contentsOfDirectory(at: contentsOfDirectory, includingPropertiesForKeys: nil)
 		let jsonFiles = directoryContents.filter { $0.pathExtension.lowercased() == "json" }
 
-		guard jsonFiles.isEmpty == false else {
-			throw CustomError(message: "No json files to get data from")
+		let allowedUpdaterExtensions = Set(
+			[
+				"pkg",
+				"mpkg",
+				"zip",
+				"dmg"
+			])
+		let updaterFiles = directoryContents.filter { url in
+			allowedUpdaterExtensions.contains(url.pathExtension.lowercased())
 		}
 
-		let allowedExtensions = [
-			"pkg",
-			"mpkg",
-			"zip",
-			"dmg"
-		]
-		let pkgFiles: [URL] = try jsonFiles
-			.map { jsonURL in
-				for ext in allowedExtensions {
-					let url = jsonURL
-						.deletingPathExtension()
-						.appendingPathExtension(ext)
-					guard
-						(try? url.checkResourceIsReachable()) == true
-					else { continue }
-					return url
-				}
-				throw CustomError(message: "No valid package for \(jsonURL.lastPathComponent)")
+		let jsonBasenameSet = Set(jsonFiles.map { $0.deletingPathExtension().lastPathComponent })
+		let (jsonUpdaterFiles, embeddedUpdaterFiles) = updaterFiles.reduce(into: ([URL](), [URL]())) {
+			let basename = $1.deletingPathExtension().lastPathComponent
+			if jsonBasenameSet.contains(basename) {
+				$0.0.append($1)
+			} else {
+				$0.1.append($1)
 			}
+		}
 
-		let jsonDecoder = JSONDecoder()
-		let items = try zip(jsonFiles, pkgFiles)
-			.map {
-				let jsonFile = $0.0
-				let pkgFile = $0.1
+		guard
+			case let embeddedFiletypes = embeddedUpdaterFiles.reduce(into: Set([String]()), {
+				$0.insert($1.pathExtension.lowercased())
+			}),
+			embeddedFiletypes.contains("pkg") == false,
+			embeddedFiletypes.contains("mpkg") == false,
+			embeddedFiletypes.contains("dmg") == false
+		else { throw CustomError(message: "pkg, mpkg, and dmg files all require json companion files.")}
 
-				let jsonData = try Data(contentsOf: jsonFile)
-				let jsonItem = try jsonDecoder.decode(JSONAppcastItem.self, from: jsonData)
-
-				guard
-					let fileSize = try pkgFile.resourceValues(forKeys: [.fileSizeKey]).fileSize
-				else { throw CustomError(message: "Cannot retrieve file size for \(pkgFile.lastPathComponent).") }
-
-				let enclosure = AppcastItem.Enclosure(
-					url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
-					length: fileSize,
-					type: "application/octet-stream",
-					edSignature: try signatureGenerator(pkgFile),
-					installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
-				return AppcastItem(from: jsonItem, enclosure: enclosure)
-			}
+		let jsonItems = try handleJSONFilePairs(
+			jsonFiles: jsonFiles,
+			jsonPKGFiles: jsonUpdaterFiles,
+			downloadURLPrefix: downloadURLPrefix,
+			signatureGenerator: signatureGenerator)
 
 		var appCast: Appcast
 		if let previousAppcastData {
@@ -117,7 +108,7 @@ public enum PKGAppcastGeneratorCore {
 		}
 
 		appCast.channel.title = channelTitle
-		appCast.channel.appendItems(items)
+		appCast.channel.appendItems(jsonItems)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
 
 		let encoder = XMLEncoder()
@@ -134,5 +125,42 @@ public enum PKGAppcastGeneratorCore {
 			],
 			header: XMLHeader(version: 1.0, encoding: "utf-8"),
 			doctype: nil)
+	}
+
+	private static func handleJSONFilePairs(
+		jsonFiles: [URL],
+		jsonPKGFiles: [URL],
+		downloadURLPrefix: URL,
+		signatureGenerator: (URL) throws -> String?
+	) throws -> [AppcastItem] {
+		let jsonDecoder = JSONDecoder()
+		
+		guard
+			jsonFiles.count == jsonPKGFiles.count
+		else { throw CustomError(message: "Mismatch count of update files and their json counterparts.") }
+
+		let pkgFiles = jsonPKGFiles.reduce(into: [String: URL]()) {
+			$0[$1.deletingPathExtension().lastPathComponent] = $1
+		}
+
+		let items = try jsonFiles.map { jsonFile in
+			let pkgFile = try pkgFiles[jsonFile.deletingPathExtension().lastPathComponent].unwrap()
+
+			let jsonData = try Data(contentsOf: jsonFile)
+			let jsonItem = try jsonDecoder.decode(JSONAppcastItem.self, from: jsonData)
+
+			guard
+				let fileSize = try pkgFile.resourceValues(forKeys: [.fileSizeKey]).fileSize
+			else { throw CustomError(message: "Cannot retrieve file size for \(pkgFile.lastPathComponent).") }
+
+			let enclosure = AppcastItem.Enclosure(
+				url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
+				length: fileSize,
+				type: "application/octet-stream",
+				edSignature: try signatureGenerator(pkgFile),
+				installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
+			return AppcastItem(from: jsonItem, enclosure: enclosure)
+		}
+		return items
 	}
 }
