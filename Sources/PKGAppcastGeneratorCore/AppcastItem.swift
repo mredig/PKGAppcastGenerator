@@ -1,7 +1,7 @@
 import Foundation
 import XMLCoder
 
-public struct AppcastItem: Codable {
+public struct AppcastItem: Codable, Hashable {
 	public let title: String
 	public let link: URL
 	public let releaseNotesLink: URL?
@@ -72,7 +72,7 @@ public struct AppcastItem: Codable {
 		case phasedRolloutInterval = "sparkle:phasedRolloutInterval"
 	}
 
-	public struct Enclosure: Codable, DynamicNodeDecoding, DynamicNodeEncoding {
+	public struct Enclosure: Codable, DynamicNodeDecoding, DynamicNodeEncoding, Hashable {
 		public let url: URL
 		public let length: Int
 		public let mimeType: String

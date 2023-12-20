@@ -84,6 +84,88 @@ class GeneratorTests: XCTestCase {
 		XCTAssertEqual(xmlDoc, zipsExpectation)
 	}
 
+	func testSortWithMatchingBuilds() throws {
+		let enclosure = AppcastItem.Enclosure(
+			url: #URL("https://he.ho.hum/updates/myapp.pkg"),
+			length: 0,
+			mimeType: "application/octet-stream")
+
+		let now = Date.now
+
+		let base = AppcastItem(
+			title: "2.1.7",
+			link: #URL("https://he.ho.hum/myapps/downloads"),
+			version: "35",
+			shortVersionString: "2.1.7",
+			description: nil,
+			publishedDate: now,
+			enclosure: enclosure)
+
+		let greaterShortVersion = AppcastItem(
+			title: "2.1.8",
+			link: #URL("https://he.ho.hum/myapps/downloads"),
+			version: "35",
+			shortVersionString: "2.1.8",
+			description: nil,
+			publishedDate: now,
+			enclosure: enclosure)
+
+		var channel = AppcastChannel(title: "foo", items: [base, greaterShortVersion])
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [greaterShortVersion, base])
+		channel.items = [greaterShortVersion, base]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [greaterShortVersion, base])
+
+		let lowerBuild = AppcastItem(
+			title: "2.1.7",
+			link: #URL("https://he.ho.hum/myapps/downloads"),
+			version: "31",
+			shortVersionString: "2.1.7",
+			description: nil,
+			publishedDate: now,
+			enclosure: enclosure)
+
+		channel.items = [base, lowerBuild]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [base, lowerBuild])
+		channel.items = [lowerBuild, base]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [base, lowerBuild])
+
+		let moreShortVersionComponents = AppcastItem(
+			title: "2.1.7.1",
+			link: #URL("https://he.ho.hum/myapps/downloads"),
+			version: "35",
+			shortVersionString: "2.1.7.1",
+			description: nil,
+			publishedDate: now,
+			enclosure: enclosure)
+
+		channel.items = [moreShortVersionComponents, base]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [moreShortVersionComponents, base])
+		channel.items = [base, moreShortVersionComponents]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [moreShortVersionComponents, base])
+
+		let older = AppcastItem(
+			title: "2.1.7",
+			link: #URL("https://he.ho.hum/myapps/downloads"),
+			version: "35",
+			shortVersionString: "2.1.7",
+			description: nil,
+			publishedDate: .distantPast,
+			enclosure: enclosure)
+
+		channel.items = [older, base]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [base, older])
+		channel.items = [base, older]
+		try channel.sortItems()
+		XCTAssertEqual(channel.items, [base, older])
+	}
+
 	static func cleanXMLDates(in xmlDoc: XMLDocument) {
 		var theNode: XMLNode? = xmlDoc
 
