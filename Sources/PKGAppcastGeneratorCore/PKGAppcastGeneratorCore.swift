@@ -118,30 +118,7 @@ public enum PKGAppcastGeneratorCore {
 
 		appCast.channel.title = channelTitle
 		appCast.channel.items = items + appCast.channel.items
-		appCast.channel.items.sort(by: {
-			if let a = Int($0.version), let b = Int($1.version) {
-				return a > b
-			} else if let a = $0.shortVersionString, let b = $1.shortVersionString {
-				let aParts = a.split(separator: ".").compactMap { Int($0) }
-				let bParts = b.split(separator: ".").compactMap { Int($0) }
-
-				let zipped = zip(aParts, bParts)
-				for pair in zipped {
-					guard pair.0 > pair.1 else { continue }
-					return true
-				}
-
-				if a.count > b.count {
-					return true
-				} else if b.count > a.count {
-					return true
-				} else {
-					return false
-				}
-			} else {
-				return true
-			}
-		})
+		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
 
 		let encoder = XMLEncoder()
 		encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)
