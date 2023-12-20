@@ -63,6 +63,27 @@ class GeneratorTests: XCTestCase {
 		XCTAssertEqual(xmlDoc, zipsExpectation)
 	}
 
+	func testGenerateAppcastZipViaAppend() throws {
+		let directory = Bundle.module.url(forResource: "ZipsAppend", withExtension: nil, subdirectory: "TestResources")!
+		let zipsStarterURL = Bundle.module.url(forResource: "expectedZipsResult", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsStarterData = try Data(contentsOf: zipsStarterURL)
+		let zipsExpectationURL = Bundle.module.url(forResource: "expectedZipsAppendResult", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsExpectation = try XMLDocument(contentsOf: zipsExpectationURL)
+
+		let data = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: directory,
+			previousAppcastData: zipsStarterData,
+			channelTitle: "Appcast",
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let xmlDoc = try XMLDocument(data: data)
+		Self.cleanXMLDates(in: xmlDoc)
+
+		XCTAssertEqual(xmlDoc, zipsExpectation)
+	}
+
 	static func cleanXMLDates(in xmlDoc: XMLDocument) {
 		var theNode: XMLNode? = xmlDoc
 
