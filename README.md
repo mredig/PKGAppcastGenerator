@@ -79,5 +79,5 @@ OPTIONS:
 Three reasons now: 
 
 1. `generate_appcast` only supports archives with .app bundles within. I had a need for automation with `.pkg` installers.
-1. Maybe it was pebkac or [this](https://www.cnn.com/2010/TECH/mobile/06/25/iphone.problems.response/index.html), but despite saying that it's supposed to sign all entries with an EdDSA key, I was unable to get my .app containing zips to get signed in another project.
+1. Maybe it was [yhiw](https://www.cnn.com/2010/TECH/mobile/06/25/iphone.problems.response/index.html) or another incarnation of pebkac, but despite saying that it's supposed to sign all entries with an EdDSA key, I was unable to get my .app containing zips to get signed in another project.
 1. It seemed fun!
