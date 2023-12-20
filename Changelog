@@ -1,5 +1,10 @@
 # PKGAppcastGenerator Changelog:
 
+### 0.2.2
+
+* fixed an issue when zips had a symlink in them
+* correct usage of downloads link
+
 ### 0.2.1
 
 * fixed sorting priorities and output
