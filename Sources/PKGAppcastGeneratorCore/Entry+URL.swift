@@ -3,7 +3,7 @@ import ZIPFoundation
 
 public extension Entry {
 	var pathURL: URL? {
-		URL(string: "zip:///\(path)")
+		URLComponents(string: "zip:///\(path)")?.url
 	}
 
 	var componentCount: Int {
