@@ -1,12 +1,30 @@
 {
   "pins" : [
     {
+      "identity" : "pizzamacros",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mredig/PizzaMacros.git",
+      "state" : {
+        "revision" : "d34bc3ca355b8d2b2a0d4cd6d3186d42cfbb6811",
+        "version" : "0.1.0"
+      }
+    },
+    {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser.git",
       "state" : {
         "revision" : "fee6933f37fde9a5e12a1e4aeaa93fe60116ff2a",
         "version" : "1.2.2"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
+        "version" : "509.0.2"
       }
     },
     {
