@@ -16,8 +16,10 @@ public struct JSONAppcastItem: Codable {
 	public let minimumAutoUpdateVersion: String?
 	public let ignoreSkippedUpgradesBelowVersion: String?
 	
+	/// Simply indicates if an update is critical or not.
+	public let criticalUpdate: Bool?
 	/// This value would be `1.2.4` in `<sparkle:criticalUpdate sparkle:version="1.2.4"></sparkle:criticalUpdate>`
-	public let criticalUpdate: String?
+	public let criticalUpdateVersion: String?
 	public let phasedRolloutInterval: Int?
 }
 ```
@@ -26,14 +28,14 @@ public struct JSONAppcastItem: Codable {
 
 * While it used to just append duplicate entries if you ran it with the same data, outputting to the same appcast several times, it now forgoes adding duplicates with the same download link!
 * It now works with both companion JSON files, but also supports .zip archives with embedded .app bundles (and pulls data from Info.plist! - so no JSON companion is required)
-* While the models support a more comprehensive solution for all the properties that can be added to the xml output, much of it has been omitted for now. Support for providing input for these features in the output xml would be great contributions, if anyone feels up to it. (My intention, in regards to this, is to refactor the logic to instead glob all the archive types, simply requiring json for formats that it can't automatically pull data from, but supporting json as supplementary data for the remaining.)
+* You can augment the embedded data with an accompanied JSON file for zipped .app files
+* While the models support a more comprehensive solution for all the properties that can be added to the xml output, much of it has been omitted for now. Support for providing input for these features in the output xml would be great contributions, if anyone feels up to it. 
 	* releaseNotesLink
 	* fullReleaseNotesLink
 	* description
 	* maximumSystemVersion
 	* minimumAutoUpdateVersion
 	* ignoreSkippedUpgradesBelowVersion
-	* criticalUpdate
 	* phasedRolloutInterval
 
 ## Usage

@@ -4,6 +4,19 @@ import SwiftPizzaSnips
 import ZIPFoundation
 
 public enum PKGAppcastGeneratorCore {
+	static let jsonDecoder = JSONDecoder()
+
+	private static let allowedUpdaterExtensions = Set(
+		[
+			"pkg",
+			"mpkg",
+			"zip",
+			"dmg"
+		])
+	private static let requirePairedJSONExtensions = allowedUpdaterExtensions.with {
+		$0.remove("zip")
+	}
+
 	package static let dateFormatter: DateFormatter = {
 		let formatter = DateFormatter()
 		formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -63,44 +76,49 @@ public enum PKGAppcastGeneratorCore {
 		let directoryContents = try FileManager.default.contentsOfDirectory(at: contentsOfDirectory, includingPropertiesForKeys: nil)
 		let jsonFiles = directoryContents.filter { $0.pathExtension.lowercased() == "json" }
 
-		let allowedUpdaterExtensions = Set(
-			[
-				"pkg",
-				"mpkg",
-				"zip",
-				"dmg"
-			])
 		let updaterFiles = directoryContents.filter { url in
 			allowedUpdaterExtensions.contains(url.pathExtension.lowercased())
 		}
 
-		let jsonBasenameSet = Set(jsonFiles.map { $0.deletingPathExtension().lastPathComponent })
-		let (jsonUpdaterFiles, embeddedUpdaterFiles) = updaterFiles.reduce(into: ([URL](), [URL]())) {
+		let jsonDict = jsonFiles.reduce(into: [String: URL]()) { jsonMap, jsonFile in
+			jsonMap[jsonFile.deletingPathExtension().lastPathComponent] = jsonFile
+		}
+		let fileGroups = try updaterFiles.reduce(into: FileGroups()) {
 			let basename = $1.deletingPathExtension().lastPathComponent
-			if jsonBasenameSet.contains(basename) {
-				$0.0.append($1)
+			if let jsonFile = jsonDict[basename] {
+				$0.pairedItems.append(.init(json: jsonFile, updateFile: $1))
+				if requirePairedJSONExtensions.contains($1.pathExtension.lowercased()) == false {
+					$0.embeddedDataUpdateFiles.append($1)
+				}
 			} else {
-				$0.1.append($1)
+				guard
+					requirePairedJSONExtensions.contains($1.pathExtension.lowercased()) == false
+				else { throw CustomError(message: "pkg, mpkg, and dmg files all require json companion files.") }
+				$0.embeddedDataUpdateFiles.append($1)
 			}
 		}
 
 		guard
-			case let embeddedFiletypes = embeddedUpdaterFiles.reduce(into: Set([String]()), {
-				$0.insert($1.pathExtension.lowercased())
-			}),
-			embeddedFiletypes.contains("pkg") == false,
-			embeddedFiletypes.contains("mpkg") == false,
-			embeddedFiletypes.contains("dmg") == false
-		else { throw CustomError(message: "pkg, mpkg, and dmg files all require json companion files.")}
+			jsonDict.count == fileGroups.pairedItems.count
+		else { throw CustomError(message: "There are json files unpaired with an update file.") }
 
-		let jsonItems = try handleJSONFilePairs(
-			jsonFiles: jsonFiles,
-			jsonPKGFiles: jsonUpdaterFiles,
+		let decodedJSONObjects = try fileGroups.pairedItems.reduce(into: [URL: JSONAppcastItem]()) { verifiedAppcastItems, pairedUpdateFile in
+			let data = try Data(contentsOf: pairedUpdateFile.json)
+			let jsonAppcast = try Self.jsonDecoder.decode(JSONAppcastItem.self, from: data)
+			if requirePairedJSONExtensions.contains(pairedUpdateFile.updateFile.pathExtension.lowercased()) {
+				try jsonAppcast.validateForPKG()
+			}
+			verifiedAppcastItems[pairedUpdateFile.updateFile] = jsonAppcast
+		}
+
+		let appcastsFromJSON = try getAppcastFromJSONOnlyPairs(
+			jsonDict: decodedJSONObjects,
 			downloadURLPrefix: downloadURLPrefix,
 			signatureGenerator: signatureGenerator)
 
 		let embeddedInfoItems = try handleEmbeddedInfoItems(
-			embeddedUpdaterFiles: embeddedUpdaterFiles,
+			embeddedUpdaterFiles: fileGroups.embeddedDataUpdateFiles,
+			decodedJSONObjects: decodedJSONObjects,
 			downloadsLink: downloadsLink,
 			downloadURLPrefix: downloadURLPrefix,
 			signatureGenerator: signatureGenerator)
@@ -116,7 +134,7 @@ public enum PKGAppcastGeneratorCore {
 		}
 
 		appCast.channel.title = channelTitle
-		appCast.channel.appendItems(jsonItems)
+		appCast.channel.appendItems(appcastsFromJSON)
 		appCast.channel.appendItems(embeddedInfoItems)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
 
@@ -134,6 +152,30 @@ public enum PKGAppcastGeneratorCore {
 			],
 			header: XMLHeader(version: 1.0, encoding: "utf-8"),
 			doctype: nil)
+	}
+
+	private static func getAppcastFromJSONOnlyPairs(
+		jsonDict: [URL: JSONAppcastItem],
+		downloadURLPrefix: URL,
+		signatureGenerator: (URL) throws -> String?
+	) throws -> [AppcastItem] {
+		try jsonDict.compactMap { (updateFile, jsonAppcast) in
+			guard
+				requirePairedJSONExtensions.contains(updateFile.pathExtension.lowercased())
+			else { return nil }
+			guard
+				let fileSize = try updateFile.resourceValues(forKeys: [.fileSizeKey]).fileSize
+			else { throw CustomError(message: "Cannot retrieve file size for \(updateFile.lastPathComponent).") }
+
+			let isPackage = updateFile.pathExtension.contains("pkg")
+			let enclosure = AppcastItem.Enclosure(
+				url: downloadURLPrefix.appending(component: updateFile.lastPathComponent),
+				length: fileSize,
+				mimeType: "application/octet-stream",
+				edSignature: try signatureGenerator(updateFile),
+				installationType: isPackage ? "package" : nil)
+			return try AppcastItem(from: jsonAppcast, enclosure: enclosure)
+		}
 	}
 
 	private static func handleJSONFilePairs(
@@ -162,19 +204,21 @@ public enum PKGAppcastGeneratorCore {
 				let fileSize = try pkgFile.resourceValues(forKeys: [.fileSizeKey]).fileSize
 			else { throw CustomError(message: "Cannot retrieve file size for \(pkgFile.lastPathComponent).") }
 
+			let isPackage = pkgFile.pathExtension.contains("pkg")
 			let enclosure = AppcastItem.Enclosure(
 				url: downloadURLPrefix.appending(component: pkgFile.lastPathComponent),
 				length: fileSize,
 				mimeType: "application/octet-stream",
 				edSignature: try signatureGenerator(pkgFile),
-				installationType: pkgFile.pathExtension.contains("pkg") ? "package" : nil)
-			return AppcastItem(from: jsonItem, enclosure: enclosure)
+				installationType: isPackage ? "package" : nil)
+			return try AppcastItem(from: jsonItem, enclosure: enclosure, isPackage: isPackage)
 		}
 		return items
 	}
 
 	private static func handleEmbeddedInfoItems(
 		embeddedUpdaterFiles: [URL],
+		decodedJSONObjects: [URL: JSONAppcastItem],
 		downloadsLink: URL?,
 		downloadURLPrefix: URL,
 		signatureGenerator: (URL) throws -> String?
@@ -187,11 +231,16 @@ public enum PKGAppcastGeneratorCore {
 		return try embeddedUpdaterFiles.map {
 			switch $0.pathExtension.lowercased() {
 			case "zip":
-				try handleZipEmbeddedInfoItem(
+				var appcastItem = try handleZipEmbeddedInfoItem(
 					zipFile: $0,
 					downloadsLink: downloadsLink,
 					downloadURLPrefix: downloadURLPrefix,
 					signatureGenerator: signatureGenerator)
+				if let jsonAppcastItem = decodedJSONObjects[$0] {
+					appcastItem.update(from: jsonAppcastItem)
+				}
+
+				return appcastItem
 			default:
 				throw CustomError(message: "Unexpected file format: \($0)")
 			}
@@ -285,7 +334,18 @@ public enum PKGAppcastGeneratorCore {
 			maximumSystemVersion: nil,
 			minimumAutoUpdateVersion: nil,
 			ignoreSkippedUpgradesBelowVersion: nil,
-			criticalUpdate: nil,
+			criticalUpdateVersion: nil,
+			criticalUpdate: false,
 			phasedRolloutInterval: nil)
 	}
+
+	struct FileGroups {
+		   var pairedItems: [PairedItem] = []
+		   var embeddedDataUpdateFiles: [URL] = []
+
+		   struct PairedItem {
+			   let json: URL
+			   let updateFile: URL
+		   }
+	   }
 }

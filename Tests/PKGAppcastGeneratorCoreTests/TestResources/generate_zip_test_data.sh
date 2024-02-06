@@ -11,7 +11,7 @@ function cleanup() {
 	rm -rf "${output}/MyApp.app"
 }
 
-for i in {0..6}; do
+for i in {0..8}; do
 
 	build=$(( ($i * 7) + 3 ))
 	minor=$(( ($build * 7) / 10 ))

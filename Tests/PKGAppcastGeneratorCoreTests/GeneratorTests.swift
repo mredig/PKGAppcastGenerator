@@ -84,6 +84,36 @@ class GeneratorTests: XCTestCase {
 		XCTAssertEqual(xmlDoc, zipsExpectation)
 	}
 
+	func testGenerateAppcastZipWithJSONAugmentationViaAppend() throws {
+		let setupDirectory = Bundle.module.url(forResource: "ZipsAppend", withExtension: nil, subdirectory: "TestResources")!
+		let jsonPairedDirectory = Bundle.module.url(forResource: "ZipsAppend2", withExtension: nil, subdirectory: "TestResources")!
+		let zipsStarterURL = Bundle.module.url(forResource: "expectedZipsResult", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsStarterData = try Data(contentsOf: zipsStarterURL)
+		let zipsExpectationURL = Bundle.module.url(forResource: "expectedZipsAppend2Result", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsExpectation = try XMLDocument(contentsOf: zipsExpectationURL)
+
+		let starterData = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: setupDirectory,
+			previousAppcastData: zipsStarterData,
+			channelTitle: "Appcast",
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let jsonPairedData = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: jsonPairedDirectory,
+			previousAppcastData: starterData,
+			channelTitle: "Appcast",
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let xmlDoc = try XMLDocument(data: jsonPairedData)
+		Self.cleanXMLDates(in: xmlDoc)
+
+		XCTAssertEqual(xmlDoc, zipsExpectation)
+	}
+
 	func testSortWithMatchingBuilds() throws {
 		let enclosure = AppcastItem.Enclosure(
 			url: #URL("https://he.ho.hum/updates/myapp.pkg"),
