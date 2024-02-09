@@ -11,7 +11,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
 		.package(url: "https://github.com/CoreOffice/XMLCoder.git", from: "0.17.1"),
-		.package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMinor(from: "0.9.17")),
+		.package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMinor(from: "0.9.18")),
 		.package(url: "https://github.com/mredig/PizzaMacros.git", .upToNextMinor(from: "0.1.0")),
 		.package(url: "https://github.com/mredig/SwiftPizzaSnips.git", .upToNextMinor(from: "0.2.17")),
     ],
