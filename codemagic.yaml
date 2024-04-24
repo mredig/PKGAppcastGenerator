@@ -71,10 +71,11 @@ workflows:
                 export TARGET_NAME="PKGAppcastGenerator"
                 ./CICD_Support/mac-spm-build.sh
 
-          - name: Notarize App
-            script: |
-                pushd $CM_BUILD_DIR
-                ./CICD_Support/mac-notarize.sh "${ARCHIVED_APP_BUNDLE_PATH}"
+        # notarizing a cli app apparently requires wrapping in a .app bundle. The only requirements are code signing, an Info.plist with a `CFBundleExecutable` entry (name of the exe file), and the exe.
+          # - name: Notarize App
+          #   script: |
+          #       pushd $CM_BUILD_DIR
+          #       ./CICD_Support/mac-notarize.sh "${ARCHIVED_APP_BUNDLE_PATH}"
 
           - name: Record Build Number
             script: |
