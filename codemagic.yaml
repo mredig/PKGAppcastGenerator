@@ -1,6 +1,6 @@
 workflows:
     build-t0.1b:
-        name: Build PKAppcastGenerator
+        name: Build PKGAppcastGenerator
         max_build_duration: 20
         instance_type: mac_mini_m1
         environment:
@@ -12,12 +12,12 @@ workflows:
                 - teamID
             vars:
                 CICD_SUPPORT_DIR: "CICD_Support"
-                BUNDLE_ID: "com.redeggproductions.PKAppcastGenerator"
+                BUNDLE_ID: "com.redeggproductions.PKGAppcastGenerator"
                 # PROJECT: "T0.1b.xcodeproj" # <-- Name of your Xcode workspace
-                SCHEME: "PKAppcastGenerator" # <-- Name of your Xcode scheme
+                SCHEME: "PKGAppcastGenerator" # <-- Name of your Xcode scheme
                 CONFIGURATION: "Release"
                 XCODE_EXPORT_OPTIONS: "ExportOptions.plist"
-                TARGET_NAME: "PKAppcastGenerator"
+                TARGET_NAME: "PKGAppcastGenerator"
                 CM_CLONE_DEPTH: 1
                 # SPARKLE_DOWNLOAD_URL: "https://github.com/sparkle-project/Sparkle/releases/download/2.6.0/Sparkle-for-Swift-Package-Manager.zip"
                 FINAL_PACKAGE_NAME_PREFIX: PKGAppcastGenerator_
@@ -68,7 +68,7 @@ workflows:
                 pushd $CM_BUILD_DIR
                 sed -i '' 's/<string>\$teamID<\/string>/<string>$TEAM_ID<\/string>/g' ./CICD_Support/ExportOptions.plist
                 export BUILD_NUMBER=$WORKFLOW_BUILD_NUMBER
-                export TARGET_NAME="PKAppcastGenerator"
+                export TARGET_NAME="PKGAppcastGenerator"
                 ./CICD_Support/mac-spm-build.sh
 
           - name: Notarize App
@@ -140,11 +140,11 @@ workflows:
                 set -x
 
                 if [[ $IS_PROD_BUILD == 1 ]]; then
-                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator"
+                    export REMOTE_PATH="pizza-downloads/public/PKGAppcastGenerator"
                 elif [[ $IS_STAGING_MERGE == 1 ]]; then
-                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator/staging"
+                    export REMOTE_PATH="pizza-downloads/public/PKGAppcastGenerator/staging"
                 else
-                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator/dev"
+                    export REMOTE_PATH="pizza-downloads/public/PKGAppcastGenerator/dev"
                 fi
                 export FILE=$DIST_NAME_ZIP
                 export ENDPOINT="s3.us-central-1.wasabisys.com"
