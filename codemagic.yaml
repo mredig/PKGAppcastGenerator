@@ -1,6 +1,6 @@
 workflows:
     build-t0.1b:
-        name: Build T0.1b
+        name: Build PKAppcastGenerator
         max_build_duration: 20
         instance_type: mac_mini_m1
         environment:
