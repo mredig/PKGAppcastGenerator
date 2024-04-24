@@ -15,6 +15,7 @@
 # SCHEME
 # CONFIGURATION
 # TARGET_NAME
+# TEAM_ID
 # end imports
 
 # exported env vars
@@ -108,15 +109,15 @@ function buildProject() {
 
 	# mv "${ARCHIVE_PATH}/Products/Applications/${TARGET_NAME}" "${ARCHIVE_EXPORT_PATH}"
 
-	# SIGNING_CERTIFICATE_TITLE=${SIGNING_CERTIFICATE_TITLE:-"${APPLE_TEAM_ID}"}
+	SIGNING_CERTIFICATE_TITLE=${SIGNING_CERTIFICATE_TITLE:-"${TEAM_ID}"}
 
-	# codesign \
-	# 	--force \
-	# 	--sign "${SIGNING_CERTIFICATE_TITLE}" \
-	# 	--entitlements "${ENTITLEMENTS_PLIST_PATH}" \
-	# 	--timestamp \
-	# 	--options runtime \
-	# 	"${ARCHIVED_APP_BUNDLE_PATH}"
+	codesign \
+		--force \
+		--sign "${SIGNING_CERTIFICATE_TITLE}" \
+		--entitlements "${ENTITLEMENTS_PLIST_PATH}" \
+		--timestamp \
+		--options runtime \
+		"${ARCHIVED_APP_BUNDLE_PATH}"
 }
 
 ## useful for speeding up github workflows while troubleshooting
