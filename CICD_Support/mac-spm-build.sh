@@ -40,7 +40,7 @@ EXPORT_OPTIONS_FILE="${WORK_PATH}/CICD_Support/ExportOptions.plist"
 ARCHIVE_EXPORT_PATH="${ARCHIVE_EXPORT_PATH:-"${BUILD_DIR}"}"
 ARCHIVED_APP_BUNDLE_PATH="${ARCHIVED_APP_BUNDLE_PATH:-"${ARCHIVE_EXPORT_PATH}/${TARGET_NAME}"}"
 
-ENTITLEMENTS_PLIST_PATH="${WORK_PATH}/CICD_Support/entitlements.mac.plist"
+ENTITLEMENTS_PLIST_PATH="${WORK_PATH}/CICD_Support/entitlements.plist"
 
 # load secrets and set basic env vars
 if [ -f Support/envsecrets ]; then
