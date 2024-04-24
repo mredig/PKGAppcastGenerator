@@ -8,7 +8,7 @@ workflows:
                 - keychain
                 # - notifications
                 - personalWasabi
-                - sparkle
+                # - sparkle
                 - teamID
             vars:
                 CICD_SUPPORT_DIR: "CICD_Support"
