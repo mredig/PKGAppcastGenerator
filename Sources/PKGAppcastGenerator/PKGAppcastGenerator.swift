@@ -95,19 +95,25 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			outputPath.appendPathComponent("appcast", conformingTo: .xml)
 		}
 
-		var previousData: Data?
-		if let existingAppcastFile {
-			guard existingAppcastURL == nil else {
+		let previousData: Data? = try await {
+			let data: Data
+			switch (existingAppcastURL, existingAppcastFile) {
+			case (.some(let url), .none):
+				data = try await URLSession.shared.data(from: url).0
+			case (.none, .some(let fileURL)):
+				data = try Data(contentsOf: fileURL)
+			case (.some, .some):
 				throw CustomError(message: "Cannot have both --existingAppcastFile and --existingAppcastURL")
+			case (.none, .none):
+				return nil
 			}
-			previousData = try Data(contentsOf: existingAppcastFile)
-		}
-		if let existingAppcastURL {
-			guard existingAppcastFile == nil else {
-				throw CustomError(message: "Cannot have both --existingAppcastFile and --existingAppcastURL")
+
+			guard data.isOccupied else {
+				print("Previous appcast data provided is empty. Will be creating new output.")
+				return nil
 			}
-			previousData = try await URLSession.shared.data(from: existingAppcastURL).0
-		}
+			return data
+		}()
 
 		let appcastData = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
