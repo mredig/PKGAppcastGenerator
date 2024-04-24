@@ -1,0 +1,220 @@
+workflows:
+    build-t0.1b:
+        name: Build T0.1b
+        max_build_duration: 20
+        instance_type: mac_mini_m1
+        environment:
+            groups:
+                - keychain
+                # - notifications
+                - personalWasabi
+                - sparkle
+                - teamID
+            vars:
+                CICD_SUPPORT_DIR: "CICD_Support"
+                BUNDLE_ID: "com.redeggproductions.PKAppcastGenerator"
+                # PROJECT: "T0.1b.xcodeproj" # <-- Name of your Xcode workspace
+                SCHEME: "PKAppcastGenerator" # <-- Name of your Xcode scheme
+                CONFIGURATION: "Release"
+                XCODE_EXPORT_OPTIONS: "ExportOptions.plist"
+                TARGET_NAME: "PKAppcastGenerator"
+                CM_CLONE_DEPTH: 1
+                # SPARKLE_DOWNLOAD_URL: "https://github.com/sparkle-project/Sparkle/releases/download/2.6.0/Sparkle-for-Swift-Package-Manager.zip"
+                FINAL_PACKAGE_NAME_PREFIX: PKGAppcastGenerator_
+        scripts:
+          - name: Establish Current Config
+            script: |
+                set -x
+
+                IS_PROD_BUILD=0
+                IS_STAGING_MERGE=0
+                if [[ $CM_BRANCH == "main" ]]; then
+                    IS_PROD_BUILD=1
+                fi
+                if [[ $CM_BRANCH == "staging" ]]; then
+                    IS_STAGING_MERGE=1
+                fi
+
+                echo "IS_PROD_BUILD=$IS_PROD_BUILD" >> "$CM_ENV"
+                echo "IS_STAGING_MERGE=$IS_STAGING_MERGE" >> "$CM_ENV"
+
+          - name: Install Dependencies
+            script: |
+                set -x
+
+                brew bundle install --file="$CM_BUILD_DIR/CICD_Support/Brewfile"
+
+          - name: Get Build Number
+            script: |
+                set -x
+                WORKFLOW_BUILD_NUMBER=$PROJECT_BUILD_NUMBER
+                echo "WORKFLOW_BUILD_NUMBER=$WORKFLOW_BUILD_NUMBER" >> $CM_ENV
+
+          - name: Certificates
+            script: |
+                set -x
+
+                keychain initialize
+                set +x
+                echo $KEYCHAIN_CERT_BASE64 | base64 --decode > /tmp/certificate.p12
+                set -x
+                keychain add-certificates --certificate /tmp/certificate.p12 --certificate-password @env:KEYCHAIN_CERT_PASSWORD
+                rm /tmp/certificate.p12
+
+          - name: Build App for distribution
+            script: |
+                set -x
+
+                pushd $CM_BUILD_DIR
+                sed -i '' 's/<string>\$teamID<\/string>/<string>$TEAM_ID<\/string>/g' ./CICD_Support/ExportOptions.plist
+                export BUILD_NUMBER=$WORKFLOW_BUILD_NUMBER
+                export TARGET_NAME="PKAppcastGenerator"
+                ./CICD_Support/mac-spm-build.sh
+
+          - name: Notarize App
+            script: |
+                pushd $CM_BUILD_DIR
+                ./CICD_Support/mac-notarize.sh "${ARCHIVED_APP_BUNDLE_PATH}"
+
+          - name: Record Build Number
+            script: |
+                set -x
+
+                git config --local user.email "action@gitlab.com"
+                git config --local user.name "GitLab Action"
+                TAGNAME="build-${WORKFLOW_BUILD_NUMBER}"
+                echo TAGNAME=${TAGNAME} >> $CM_ENV
+
+                TAGGED_REF=$CM_BRANCH
+                if [[ $IS_PROD_BUILD == 1 ]]; then
+                    TAGGED_REF="main"
+                elif [[ $IS_STAGING_MERGE == 1 ]]; then
+                    TAGGED_REF="staging"
+                fi
+
+                git tag -a "${TAGNAME}" "source/${TAGGED_REF}" -m "build ${TAGNAME}"
+                git push source "${TAGNAME}"
+
+                if [[ "${TAGGED_REF}" == "main" ]]; then
+                    version=${WORKFLOW_BUILD_NUMBER}
+                    git tag -a "v${version}" "source/${TAGGED_REF}" -m "release ${version}"
+                    git push source "v${version}"
+                fi
+                echo "TAGGED_REF=$TAGGED_REF" >> $CM_ENV
+
+          - name: Zip App
+            script: |
+                set -x
+
+                pushd "$CM_BUILD_DIR/.build/"
+                DIST_NAME="${FINAL_PACKAGE_NAME_PREFIX}${WORKFLOW_VERSION_NUMBER}(${WORKFLOW_BUILD_NUMBER})"
+                DIST_NAME_ZIP="${DIST_NAME}.zip"
+                # tar -zcvf "${DIST_NAME_ZIP}" "${TARGET_NAME}"
+                zip -ry "${DIST_NAME_ZIP}" "${TARGET_NAME}"
+                mv "${DIST_NAME_ZIP}" ../
+                echo "DIST_NAME=$DIST_NAME" >> $CM_ENV
+                echo "DIST_PATH=$CM_BUILD_DIR/.build/$DIST_NAME" >> $CM_ENV
+                echo "DIST_NAME_ZIP=$DIST_NAME_ZIP" >> $CM_ENV
+                echo "DIST_PATH_ZIP=$CM_BUILD_DIR/$DIST_NAME_ZIP" >> $CM_ENV
+
+          # - name: Get Sparkly
+          #   script: |
+
+          #       export APPCAST_URL="https://s3.us-central-1.wasabisys.com/pizza-downloads/public/t0.1b-dist/appcast.xml"
+          #       if [[ $IS_PROD_BUILD == 1 ]]; then
+          #           export DOWNLOAD_URL_PREFIX="https://s3.us-central-1.wasabisys.com/pizza-downloads/public/t0.1b-dist/"
+          #       elif [[ $IS_STAGING_MERGE == 1 ]]; then
+          #           export DOWNLOAD_URL_PREFIX="https://s3.us-central-1.wasabisys.com/pizza-downloads/public/t0.1b-dist/staging/"
+          #       else
+          #           export DOWNLOAD_URL_PREFIX="https://s3.us-central-1.wasabisys.com/pizza-downloads/public/t0.1b-dist/dev/"
+          #       fi
+          #       export DOWNLOADS_LINK="${DOWNLOAD_URL_PREFIX}/${DIST_NAME_ZIP}"
+
+          #       pushd $CM_BUILD_DIR
+          #       ./CICD_Support/sparkle-sign-and-generate-appcast.sh appcast.xml
+
+          - name: Upload App to Wasabi
+            script: |
+                export KEY=$WASABI_KEY
+                export SECRET=$WASABI_SECRET
+                set -x
+
+                if [[ $IS_PROD_BUILD == 1 ]]; then
+                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator"
+                elif [[ $IS_STAGING_MERGE == 1 ]]; then
+                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator/staging"
+                else
+                    export REMOTE_PATH="pizza-downloads/public/PKAppcastGenerator/dev"
+                fi
+                export FILE=$DIST_NAME_ZIP
+                export ENDPOINT="s3.us-central-1.wasabisys.com"
+                export ACL="public-read"
+                export PROVIDER="Wasabi"
+
+                pushd $CM_BUILD_DIR
+                ./CICD_Support/s3upload.sh
+
+                echo "S3_PATH=${REMOTE_PATH}/${FILE}" >> $CM_ENV
+
+          # - name: Upload Appcast to Wasabi
+          #   script: |
+          #       export KEY=$WASABI_KEY
+          #       export SECRET=$WASABI_SECRET
+          #       set -x
+
+          #       if [[ $IS_PROD_BUILD == 1 ]] || [[ $IS_STAGING_MERGE == 1 ]]; then
+          #           export REMOTE_PATH="pizza-downloads/public/t0.1b-dist"
+          #       else
+          #           export REMOTE_PATH="pizza-downloads/public/t0.1b-dist/dev"
+          #       fi
+          #       export FILE=$APPCAST_PATH
+          #       export ENDPOINT="s3.us-central-1.wasabisys.com"
+          #       export ACL="public-read"
+          #       export PROVIDER="Wasabi"
+
+          #       pushd $CM_BUILD_DIR
+          #       ./CICD_Support/s3upload.sh
+
+          #       # echo "S3_PATH=${REMOTE_PATH}/${FILE}" >> $CM_ENV
+
+          # - name: Notify Discord
+          #   script: |
+          #       set -x
+
+          #       flag=":orange_square:"
+          #       if [[ $IS_STAGING_MERGE == 1 ]]; then
+          #           flag=":yellow_square:"
+          #       elif [[ $IS_PROD_BUILD == 1 ]]; then
+          #           flag=":green_square:"
+          #       fi
+
+          #       disclaimer=""
+          #       if [[ $IS_STAGING_MERGE == 0 ]] && [[ $IS_PROD_BUILD == 0 ]]; then
+          #           disclaimer="Just a dev build"
+          #       elif [[ $IS_STAGING_MERGE == 1 ]]; then
+          #           disclaimer="Just a staging build"
+          #       fi
+
+          #       WEBHOOK_MESSAGE="
+          #       ### ${flag} Build ${WORKFLOW_BUILD_NUMBER} Completed!
+          #       tagged on branch '${TAGGED_REF}'
+          #       $disclaimer
+
+          #       [Download](https://s3.us-central-1.wasabisys.com/${S3_PATH})
+          #       "
+
+          #       pushd $CM_BUILD_DIR
+          #       ./CICD_Support/webhook.sh "${DISCORD_WEBHOOK_URL}" "${WEBHOOK_MESSAGE}"
+
+        artifacts:
+            - build/ios/ipa/*
+            - $DIST_PATH_ZIP
+            - $DIST_PATH
+            - /tmp/xcodebuild_logs/*.log
+            - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+            - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+        triggering:
+            events:
+                - push
+                - pull_request
