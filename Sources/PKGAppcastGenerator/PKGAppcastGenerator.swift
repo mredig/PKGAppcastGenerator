@@ -63,8 +63,8 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 	@Option(
 		name: [.long, .customShort("c")],
 		help: """
-			The name of the distribution channel. This is a value that can be filtered in the client
-			update delegate. Setting this value will only apply to new items added to the appcast.
+			The name of the distribution channel. This is a value that can be filtered in the client \
+			update delegate. Setting this value will only apply to new items added to the appcast. \
 			Optional - will default to the default channel (omitted).
 			""")
 	var channelName: String?
