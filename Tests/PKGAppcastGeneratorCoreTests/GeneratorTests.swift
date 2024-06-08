@@ -23,6 +23,12 @@ class GeneratorTests: XCTestCase {
 		Self.cleanXMLDates(in: xmlDoc)
 
 		XCTAssertEqual(xmlDoc, jsonExpectation)
+		if xmlDoc != jsonExpectation {
+			try ComparingForTests.compareFilesInFinder(
+				withExpectation: .data(jsonExpectation.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
+				andActualResult: .data(xmlDoc.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
+				contextualInfo: "generate appcast json from scratch")
+		}
 	}
 
 	func testGenerateAppcastJSONViaAppend() throws {
@@ -180,7 +186,7 @@ class GeneratorTests: XCTestCase {
 		var channel = RSSAppcastChannel(title: "foo", items: [base, greaterShortVersion])
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [greaterShortVersion, base])
-		channel.items = [greaterShortVersion, base]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [greaterShortVersion, base]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [greaterShortVersion, base])
 
@@ -194,10 +200,10 @@ class GeneratorTests: XCTestCase {
 			publishedDate: now,
 			enclosure: enclosure)
 
-		channel.items = [base, lowerBuild]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [base, lowerBuild]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [base, lowerBuild])
-		channel.items = [lowerBuild, base]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [lowerBuild, base]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [base, lowerBuild])
 
@@ -211,10 +217,10 @@ class GeneratorTests: XCTestCase {
 			publishedDate: now,
 			enclosure: enclosure)
 
-		channel.items = [moreShortVersionComponents, base]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [moreShortVersionComponents, base]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [moreShortVersionComponents, base])
-		channel.items = [base, moreShortVersionComponents]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [base, moreShortVersionComponents]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [moreShortVersionComponents, base])
 
@@ -228,10 +234,10 @@ class GeneratorTests: XCTestCase {
 			publishedDate: .distantPast,
 			enclosure: enclosure)
 
-		channel.items = [older, base]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [older, base]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [base, older])
-		channel.items = [base, older]
+		channel.itemChannels[RSSAppcastChannel.defaultChannel] = [base, older]
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [base, older])
 	}

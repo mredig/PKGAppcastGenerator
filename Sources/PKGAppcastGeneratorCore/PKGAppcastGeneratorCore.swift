@@ -141,8 +141,8 @@ public enum PKGAppcastGeneratorCore {
 		if let rssChannelTitle {
 			appCast.channel.title = rssChannelTitle
 		}
-		appCast.channel.appendItems(appcastsFromJSON)
-		appCast.channel.appendItems(embeddedInfoItems)
+		appCast.channel.appendItems(appcastsFromJSON, to: appcastChannelName)
+		appCast.channel.appendItems(embeddedInfoItems, to: appcastChannelName)
 		appCast.channel.sortItems(by: RSSAppcastChannel.defaultSortItems)
 		if let maximumVersionsToRetain {
 			appCast.channel.cullItems(afterFirst: maximumVersionsToRetain)
