@@ -143,7 +143,7 @@ public enum PKGAppcastGeneratorCore {
 		}
 		appCast.channel.appendItems(appcastsFromJSON, to: appcastChannelName)
 		appCast.channel.appendItems(embeddedInfoItems, to: appcastChannelName)
-		appCast.channel.sortItems(by: RSSAppcastChannel.defaultSortItems)
+		appCast.channel.sortItems(by: RSSAppcastChannel.defaultSortItems, in: appcastChannelName)
 		if let maximumVersionsToRetain {
 			appCast.channel.cullItems(afterFirst: maximumVersionsToRetain)
 		}

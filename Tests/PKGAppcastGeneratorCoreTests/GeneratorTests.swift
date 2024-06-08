@@ -2,6 +2,7 @@ import XCTest
 import PKGAppcastGeneratorCore
 import PizzaMacros
 import ZIPFoundation
+import SwiftPizzaSnips
 
 class GeneratorTests: XCTestCase {
 	func testGenerateAppcastJSONFromScratch() throws {
@@ -27,7 +28,7 @@ class GeneratorTests: XCTestCase {
 			try ComparingForTests.compareFilesInFinder(
 				withExpectation: .data(jsonExpectation.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
 				andActualResult: .data(xmlDoc.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
-				contextualInfo: "generate appcast json from scratch")
+				contextualInfo: #function)
 		}
 	}
 
@@ -154,6 +155,65 @@ class GeneratorTests: XCTestCase {
 
 		XCTAssertEqual(xmlDoc, zipsExpectation)
 	}
+
+	func testGenerateAppcastZipViaAppendWithNewChannel() throws {
+		let directory = Bundle.module.url(forResource: "ZipsAppend", withExtension: nil, subdirectory: "TestResources")!
+		let zipsStarterURL = Bundle.module.url(forResource: "starterZipsWithBeta", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsStarterData = try Data(contentsOf: zipsStarterURL)
+		let zipsExpectationURL = Bundle.module.url(forResource: "expectedZipsWithBetaAppendNewBeta", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsExpectation = try XMLDocument(contentsOf: zipsExpectationURL)
+
+		let data = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: directory,
+			previousAppcastData: zipsStarterData,
+			maximumVersionsToRetain: nil,
+			rssChannelTitle: "Appcast",
+			appcastChannelName: "beta",
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let xmlDoc = try XMLDocument(data: data)
+		Self.cleanXMLDates(in: xmlDoc)
+
+		XCTAssertEqual(xmlDoc, zipsExpectation)
+		if xmlDoc != zipsExpectation {
+			try ComparingForTests.compareFilesInFinder(
+				withExpectation: .url(zipsExpectationURL),
+				andActualResult: .data(xmlDoc.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
+				contextualInfo: #function)
+		}
+	}
+
+	func testGenerateAppcastZipWithBetaAppendNonBeta() throws {
+		let directory = Bundle.module.url(forResource: "ZipsAppend", withExtension: nil, subdirectory: "TestResources")!
+		let zipsStarterURL = Bundle.module.url(forResource: "starterZipsWithBeta", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsStarterData = try Data(contentsOf: zipsStarterURL)
+		let zipsExpectationURL = Bundle.module.url(forResource: "expectedZipsWithBetaAppend", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsExpectation = try XMLDocument(contentsOf: zipsExpectationURL)
+
+		let data = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: directory,
+			previousAppcastData: zipsStarterData,
+			maximumVersionsToRetain: nil,
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let xmlDoc = try XMLDocument(data: data)
+		Self.cleanXMLDates(in: xmlDoc)
+
+		XCTAssertEqual(xmlDoc, zipsExpectation)
+		if xmlDoc != zipsExpectation {
+			try ComparingForTests.compareFilesInFinder(
+				withExpectation: .url(zipsExpectationURL),
+				andActualResult: .data(xmlDoc.xmlData(options: .nodePrettyPrint), fileExtension: "xml"),
+				contextualInfo: #function)
+		}
+	}
+
 
 	func testSortWithMatchingBuilds() throws {
 		let enclosure = AppcastItem.Enclosure(

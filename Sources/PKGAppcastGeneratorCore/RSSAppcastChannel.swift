@@ -77,10 +77,7 @@ public struct RSSAppcastChannel: Codable {
 		try container.encodeIfPresent(link, forKey: .link)
 		try container.encodeIfPresent(description, forKey: .description)
 		try container.encodeIfPresent(language, forKey: .language)
-		
-		let flattenedItems = itemChannels.flatMap { $0.value }
-
-		try container.encode(flattenedItems, forKey: .items)
+		try container.encode(items, forKey: .items)
 	}
 
 	enum CodingKeys: String, CodingKey {
