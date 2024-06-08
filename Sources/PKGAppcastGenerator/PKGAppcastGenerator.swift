@@ -54,14 +54,14 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 	var downloadURLPrefix: URL
 
 	@Option(
-		name: .shortAndLong,
+		name: .long,
 		help: """
 			The title for the rss feed channel. Defaults to "App Changelog"
 			""")
 	var channelTitle: String?
 
 	@Option(
-		name: [.long, .short],
+		name: [.long, .customShort("c")],
 		help: """
 			The name of the distribution channel. This is a value that can be filtered in the client
 			update delegate. Setting this value will only apply to new items added to the appcast.
@@ -71,7 +71,7 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 
 	@Option(
 		name: .shortAndLong,
-		help: "Where to save the output file. Defaults to `./appcast.xml`.",
+		help: "Where to save the output file. Defaults to `./appcast.xml` (the cwd you are running this tool from).",
 		transform: {
 			URL(filePath: $0, relativeTo: .currentDirectory())
 		})
