@@ -177,7 +177,7 @@ class GeneratorTests: XCTestCase {
 			publishedDate: now,
 			enclosure: enclosure)
 
-		var channel = AppcastChannel(title: "foo", items: [base, greaterShortVersion])
+		var channel = RSSAppcastChannel(title: "foo", items: [base, greaterShortVersion])
 		try channel.sortItems()
 		XCTAssertEqual(channel.items, [greaterShortVersion, base])
 		channel.items = [greaterShortVersion, base]

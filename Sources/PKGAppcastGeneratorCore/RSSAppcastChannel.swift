@@ -1,8 +1,8 @@
 import Foundation
 
-/// Not to be confused with `AppcastItem` channels. This one must be analgous to something built into rss, while
-/// `AppcastItem.channel` is a categorization tool from Sparkle.
-public struct AppcastChannel: Codable {
+/// Not to be confused with `AppcastItem` channels. This one is something built into the rss spec, while
+/// `AppcastItem.channel` is the channel categorization tool from Sparkle.
+public struct RSSAppcastChannel: Codable {
 	public var title: String
 	public var link: URL?
 	public var description: String?

@@ -41,7 +41,7 @@ public enum PKGAppcastGeneratorCore {
 				installationType: "package"))
 
 
-		let channel = AppcastChannel(
+		let channel = RSSAppcastChannel(
 			title: "App Changelog",
 			items: [item])
 
@@ -135,7 +135,7 @@ public enum PKGAppcastGeneratorCore {
 
 			appCast = try decoder.decode(Appcast.self, from: previousAppcastData)
 		} else {
-			appCast = Appcast(channel: AppcastChannel(title: rssChannelTitle, items: []))
+			appCast = Appcast(channel: RSSAppcastChannel(title: rssChannelTitle, items: []))
 		}
 
 		if let rssChannelTitle {
@@ -143,7 +143,7 @@ public enum PKGAppcastGeneratorCore {
 		}
 		appCast.channel.appendItems(appcastsFromJSON)
 		appCast.channel.appendItems(embeddedInfoItems)
-		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
+		appCast.channel.sortItems(by: RSSAppcastChannel.defaultSortItems)
 		if let maximumVersionsToRetain {
 			appCast.channel.cullItems(afterFirst: maximumVersionsToRetain)
 		}
