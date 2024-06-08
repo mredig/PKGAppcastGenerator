@@ -4,6 +4,7 @@ import XMLCoder
 public struct AppcastItem: Codable, Hashable {
 	public var title: String
 	public var link: URL
+	public var channel: String?
 	public var releaseNotesLink: URL?
 	public var fullReleaseNotesLink: URL?
 	public var version: String
@@ -27,6 +28,7 @@ public struct AppcastItem: Codable, Hashable {
 	public init(
 		title: String,
 		link: URL,
+		channel: String?,
 		releaseNotesLink: URL? = nil,
 		fullReleaseNotesLink: URL? = nil,
 		version: String,
@@ -44,6 +46,7 @@ public struct AppcastItem: Codable, Hashable {
 	) {
 		self.title = title
 		self.link = link
+		self.channel = channel
 		self.releaseNotesLink = releaseNotesLink
 		self.fullReleaseNotesLink = fullReleaseNotesLink
 		self.version = version
@@ -62,6 +65,7 @@ public struct AppcastItem: Codable, Hashable {
 	enum CodingKeys: String, CodingKey {
 		case title
 		case link
+		case channel = "sparkle:channel"
 		case releaseNotesLink = "sparkle:releaseNotesLink"
 		case fullReleaseNotesLink = "sparkle:fullReleaseNotesLink"
 		case version = "sparkle:version"
@@ -123,7 +127,7 @@ public struct AppcastItem: Codable, Hashable {
 }
 
 public extension AppcastItem {
-	init(from appCast: JSONAppcastItem, enclosure: Enclosure, isPackage: Bool? = nil) throws {
+	init(from appCast: JSONAppcastItem, appcastChannelFallback: String?, enclosure: Enclosure, isPackage: Bool? = nil) throws {
 		var enclosure = enclosure
 		if appCast.isPackage == true || isPackage == true {
 			enclosure.installationType = "package"
@@ -131,7 +135,8 @@ public extension AppcastItem {
 		}
 		try self.init(
 			title: appCast.title.unwrap(),
-			link: appCast.link.unwrap(),
+			link: appCast.link.unwrap(), 
+			channel: appCast.channel ?? appcastChannelFallback,
 			releaseNotesLink: appCast.releaseNotesLink,
 			fullReleaseNotesLink: appCast.fullReleaseNotesLink,
 			version: appCast.version.unwrap(),

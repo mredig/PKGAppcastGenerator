@@ -27,7 +27,8 @@ public enum PKGAppcastGeneratorCore {
 	public static func printSampleAppcast() throws {
 		let item = AppcastItem(
 			title: "Version 1.0",
-			link: URL(string: "https://google.com")!,
+			link: URL(string: "https://google.com")!, 
+			channel: nil,
 			version: "1234",
 			shortVersionString: "1.0.0",
 			description: "<p class='header'>this is something</p>",
@@ -68,7 +69,8 @@ public enum PKGAppcastGeneratorCore {
 		fromContentsOfDirectory contentsOfDirectory: URL,
 		previousAppcastData: Data?,
 		maximumVersionsToRetain: Int?,
-		channelTitle: String,
+		rssChannelTitle: String?,
+		appcastChannelName: String?,
 		downloadsLink: URL?,
 		signatureGenerator: (URL) throws -> String?,
 		downloadURLPrefix: URL
@@ -115,13 +117,15 @@ public enum PKGAppcastGeneratorCore {
 		let appcastsFromJSON = try getAppcastFromJSONOnlyPairs(
 			jsonDict: decodedJSONObjects,
 			downloadURLPrefix: downloadURLPrefix,
+			appcastChannelFallback: appcastChannelName,
 			signatureGenerator: signatureGenerator)
 
 		let embeddedInfoItems = try handleEmbeddedInfoItems(
 			embeddedUpdaterFiles: fileGroups.embeddedDataUpdateFiles,
 			decodedJSONObjects: decodedJSONObjects,
 			downloadsLink: downloadsLink,
-			downloadURLPrefix: downloadURLPrefix,
+			downloadURLPrefix: downloadURLPrefix, 
+			appcastChannel: appcastChannelName,
 			signatureGenerator: signatureGenerator)
 
 		var appCast: Appcast
@@ -131,10 +135,12 @@ public enum PKGAppcastGeneratorCore {
 
 			appCast = try decoder.decode(Appcast.self, from: previousAppcastData)
 		} else {
-			appCast = Appcast(channel: AppcastChannel(title: channelTitle, items: []))
+			appCast = Appcast(channel: AppcastChannel(title: rssChannelTitle, items: []))
 		}
 
-		appCast.channel.title = channelTitle
+		if let rssChannelTitle {
+			appCast.channel.title = rssChannelTitle
+		}
 		appCast.channel.appendItems(appcastsFromJSON)
 		appCast.channel.appendItems(embeddedInfoItems)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
@@ -161,6 +167,7 @@ public enum PKGAppcastGeneratorCore {
 	private static func getAppcastFromJSONOnlyPairs(
 		jsonDict: [URL: JSONAppcastItem],
 		downloadURLPrefix: URL,
+		appcastChannelFallback: String?,
 		signatureGenerator: (URL) throws -> String?
 	) throws -> [AppcastItem] {
 		try jsonDict.compactMap { (updateFile, jsonAppcast) in
@@ -178,7 +185,7 @@ public enum PKGAppcastGeneratorCore {
 				mimeType: "application/octet-stream",
 				edSignature: try signatureGenerator(updateFile),
 				installationType: isPackage ? "package" : nil)
-			return try AppcastItem(from: jsonAppcast, enclosure: enclosure)
+			return try AppcastItem(from: jsonAppcast, appcastChannelFallback: appcastChannelFallback, enclosure: enclosure)
 		}
 	}
 
@@ -186,6 +193,7 @@ public enum PKGAppcastGeneratorCore {
 		jsonFiles: [URL],
 		jsonPKGFiles: [URL],
 		downloadURLPrefix: URL,
+		appcastChannelFallback: String?,
 		signatureGenerator: (URL) throws -> String?
 	) throws -> [AppcastItem] {
 		let jsonDecoder = JSONDecoder()
@@ -215,7 +223,7 @@ public enum PKGAppcastGeneratorCore {
 				mimeType: "application/octet-stream",
 				edSignature: try signatureGenerator(pkgFile),
 				installationType: isPackage ? "package" : nil)
-			return try AppcastItem(from: jsonItem, enclosure: enclosure, isPackage: isPackage)
+			return try AppcastItem(from: jsonItem, appcastChannelFallback: appcastChannelFallback, enclosure: enclosure, isPackage: isPackage)
 		}
 		return items
 	}
@@ -225,6 +233,7 @@ public enum PKGAppcastGeneratorCore {
 		decodedJSONObjects: [URL: JSONAppcastItem],
 		downloadsLink: URL?,
 		downloadURLPrefix: URL,
+		appcastChannel: String?,
 		signatureGenerator: (URL) throws -> String?
 	) throws -> [AppcastItem] {
 		guard embeddedUpdaterFiles.isOccupied else { return [] }
@@ -238,7 +247,8 @@ public enum PKGAppcastGeneratorCore {
 				var appcastItem = try handleZipEmbeddedInfoItem(
 					zipFile: $0,
 					downloadsLink: downloadsLink,
-					downloadURLPrefix: downloadURLPrefix,
+					downloadURLPrefix: downloadURLPrefix, 
+					appcastChannel: appcastChannel,
 					signatureGenerator: signatureGenerator)
 				if let jsonAppcastItem = decodedJSONObjects[$0] {
 					appcastItem.update(from: jsonAppcastItem)
@@ -255,6 +265,7 @@ public enum PKGAppcastGeneratorCore {
 		zipFile: URL,
 		downloadsLink: URL,
 		downloadURLPrefix: URL,
+		appcastChannel: String?,
 		signatureGenerator: (URL) throws -> String?
 	) throws -> AppcastItem {
 		let zipArchive = try Archive(url: zipFile, accessMode: .read)
@@ -327,6 +338,7 @@ public enum PKGAppcastGeneratorCore {
 		return .init(
 			title: versionNumber,
 			link: downloadsLink,
+			channel: appcastChannel,
 			releaseNotesLink: nil,
 			fullReleaseNotesLink: nil,
 			version: buildNumber,

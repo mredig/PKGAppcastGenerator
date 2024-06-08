@@ -3,6 +3,7 @@ import Foundation
 public struct JSONAppcastItem: Codable {
 	public let title: String?
 	public let link: URL?
+	public let channel: String?
 	public let releaseNotesLink: URL?
 	public let fullReleaseNotesLink: URL?
 	public let version: String?

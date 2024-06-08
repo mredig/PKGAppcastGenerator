@@ -1,5 +1,7 @@
 import Foundation
 
+/// Not to be confused with `AppcastItem` channels. This one must be analgous to something built into rss, while
+/// `AppcastItem.channel` is a categorization tool from Sparkle.
 public struct AppcastChannel: Codable {
 	public var title: String
 	public var link: URL?
@@ -8,13 +10,13 @@ public struct AppcastChannel: Codable {
 	public var items: [AppcastItem]
 
 	public init(
-		title: String,
+		title: String? = nil,
 		link: URL? = nil,
 		description: String? = nil,
 		language: String? = nil,
 		items: [AppcastItem]
 	) {
-		self.title = title
+		self.title = title ?? "App Changelog"
 		self.link = link
 		self.description = description
 		self.language = language

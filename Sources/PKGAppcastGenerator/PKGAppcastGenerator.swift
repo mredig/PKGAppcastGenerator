@@ -56,9 +56,18 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 	@Option(
 		name: .shortAndLong,
 		help: """
-			The title for the channel. Defaults to "App Changelog"
+			The title for the rss feed channel. Defaults to "App Changelog"
 			""")
 	var channelTitle: String?
+
+	@Option(
+		name: [.long, .short],
+		help: """
+			The name of the distribution channel. This is a value that can be filtered in the client
+			update delegate. Setting this value will only apply to new items added to the appcast.
+			Optional - will default to the default channel (omitted).
+			""")
+	var channelName: String?
 
 	@Option(
 		name: .shortAndLong,
@@ -127,7 +136,8 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: previousData,
 			maximumVersionsToRetain: oldVersionsToTrack,
-			channelTitle: channelTitle ?? "App Changelog",
+			rssChannelTitle: channelTitle,
+			appcastChannelName: channelName,
 			downloadsLink: downloadsLink,
 			signatureGenerator: signaureGenerator,
 			downloadURLPrefix: downloadURLPrefix)

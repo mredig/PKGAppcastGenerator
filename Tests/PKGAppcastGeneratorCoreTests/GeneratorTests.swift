@@ -13,7 +13,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: nil, 
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: nil,
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -35,7 +36,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: jsonStarterData,
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: nil,
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -55,7 +57,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: nil,
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -77,7 +80,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: zipsStarterData,
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -100,7 +104,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: setupDirectory,
 			previousAppcastData: zipsStarterData,
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -109,7 +114,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: jsonPairedDirectory,
 			previousAppcastData: starterData,
 			maximumVersionsToRetain: nil,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -131,7 +137,8 @@ class GeneratorTests: XCTestCase {
 			fromContentsOfDirectory: directory,
 			previousAppcastData: zipsStarterData,
 			maximumVersionsToRetain: 2,
-			channelTitle: "Appcast",
+			rssChannelTitle: "Appcast",
+			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
@@ -153,6 +160,7 @@ class GeneratorTests: XCTestCase {
 		let base = AppcastItem(
 			title: "2.1.7",
 			link: #URL("https://he.ho.hum/myapps/downloads"),
+			channel: nil,
 			version: "35",
 			shortVersionString: "2.1.7",
 			description: nil,
@@ -162,6 +170,7 @@ class GeneratorTests: XCTestCase {
 		let greaterShortVersion = AppcastItem(
 			title: "2.1.8",
 			link: #URL("https://he.ho.hum/myapps/downloads"),
+			channel: nil,
 			version: "35",
 			shortVersionString: "2.1.8",
 			description: nil,
@@ -178,6 +187,7 @@ class GeneratorTests: XCTestCase {
 		let lowerBuild = AppcastItem(
 			title: "2.1.7",
 			link: #URL("https://he.ho.hum/myapps/downloads"),
+			channel: nil,
 			version: "31",
 			shortVersionString: "2.1.7",
 			description: nil,
@@ -194,6 +204,7 @@ class GeneratorTests: XCTestCase {
 		let moreShortVersionComponents = AppcastItem(
 			title: "2.1.7.1",
 			link: #URL("https://he.ho.hum/myapps/downloads"),
+			channel: nil,
 			version: "35",
 			shortVersionString: "2.1.7.1",
 			description: nil,
@@ -210,6 +221,7 @@ class GeneratorTests: XCTestCase {
 		let older = AppcastItem(
 			title: "2.1.7",
 			link: #URL("https://he.ho.hum/myapps/downloads"),
+			channel: nil,
 			version: "35",
 			shortVersionString: "2.1.7",
 			description: nil,
