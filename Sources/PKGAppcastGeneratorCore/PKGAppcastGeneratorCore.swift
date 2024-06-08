@@ -67,6 +67,7 @@ public enum PKGAppcastGeneratorCore {
 	public static func generateAppcast(
 		fromContentsOfDirectory contentsOfDirectory: URL,
 		previousAppcastData: Data?,
+		maximumVersionsToRetain: Int?,
 		channelTitle: String,
 		downloadsLink: URL?,
 		signatureGenerator: (URL) throws -> String?,
@@ -137,6 +138,9 @@ public enum PKGAppcastGeneratorCore {
 		appCast.channel.appendItems(appcastsFromJSON)
 		appCast.channel.appendItems(embeddedInfoItems)
 		appCast.channel.sortItems(by: AppcastChannel.defaultSortItems)
+		if let maximumVersionsToRetain {
+			appCast.channel.cullItems(afterFirst: maximumVersionsToRetain)
+		}
 
 		let encoder = XMLEncoder()
 		encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)

@@ -89,6 +89,14 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 		})
 	var signUpdateKeyFile: URL?
 
+	@Option(
+		name: .customLong("old-versions"),
+		help: """
+		Number of old versions to hold onto before culling. E.g. '--old-versions 5' will hold onto the 5 most \
+		recent versions and will delete any older versions, beyond that.
+		""")
+	var oldVersionsToTrack: Int?
+
 	mutating func run() async throws {
 		var outputPath = self.outputPath ?? .currentDirectory()
 		if outputPath.hasDirectoryPath {
@@ -118,6 +126,7 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 		let appcastData = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
 			previousAppcastData: previousData,
+			maximumVersionsToRetain: oldVersionsToTrack,
 			channelTitle: channelTitle ?? "App Changelog",
 			downloadsLink: downloadsLink,
 			signatureGenerator: signaureGenerator,

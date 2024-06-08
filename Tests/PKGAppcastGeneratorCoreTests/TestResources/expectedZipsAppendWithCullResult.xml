@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+    <channel>
+        <title>Appcast</title>
+        <item>
+            <title>2.11.5</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>45</sparkle:version>
+            <sparkle:shortVersionString>2.11.5</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-2.11.5.zip" length="1526" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.6</sparkle:minimumSystemVersion>
+        </item>
+        <item>
+            <title>2.6.6</title>
+            <link>https://he.ho.hum/myapps/downloads</link>
+            <sparkle:version>38</sparkle:version>
+            <sparkle:shortVersionString>2.6.6</sparkle:shortVersionString>
+            <pubDate>Fri, 31 Dec 0001 18:09:24 -055036</pubDate>
+            <enclosure url="https://he.ho.hum/updates/MyApp-2.6.6.zip" length="1477" type="application/zip" sparkle:edSignature="Secured! jk"></enclosure>
+            <sparkle:minimumSystemVersion>12.5</sparkle:minimumSystemVersion>
+        </item>
+    </channel>
+</rss>

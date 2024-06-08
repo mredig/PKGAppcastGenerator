@@ -70,4 +70,10 @@ public struct AppcastChannel: Codable {
 			return first.publishedDate > second.publishedDate
 		}
 	}
+
+	public mutating func cullItems(afterFirst count: Int) {
+		guard items.count > count else { return }
+		let range = items.startIndex..<items.index(items.startIndex, offsetBy: count)
+		items = Array(items[range])
+	}
 }

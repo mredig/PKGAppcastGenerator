@@ -11,7 +11,8 @@ class GeneratorTests: XCTestCase {
 
 		let data = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
-			previousAppcastData: nil,
+			previousAppcastData: nil, 
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: nil,
 			signatureGenerator: { _ in "Secured! jk"},
@@ -33,6 +34,7 @@ class GeneratorTests: XCTestCase {
 		let data = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
 			previousAppcastData: jsonStarterData,
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: nil,
 			signatureGenerator: { _ in "Secured! jk"},
@@ -52,6 +54,7 @@ class GeneratorTests: XCTestCase {
 		let data = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
 			previousAppcastData: nil,
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
@@ -73,6 +76,7 @@ class GeneratorTests: XCTestCase {
 		let data = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
 			previousAppcastData: zipsStarterData,
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
@@ -95,6 +99,7 @@ class GeneratorTests: XCTestCase {
 		let starterData = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: setupDirectory,
 			previousAppcastData: zipsStarterData,
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
@@ -103,12 +108,35 @@ class GeneratorTests: XCTestCase {
 		let jsonPairedData = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: jsonPairedDirectory,
 			previousAppcastData: starterData,
+			maximumVersionsToRetain: nil,
 			channelTitle: "Appcast",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
 			signatureGenerator: { _ in "Secured! jk"},
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: jsonPairedData)
+		Self.cleanXMLDates(in: xmlDoc)
+
+		XCTAssertEqual(xmlDoc, zipsExpectation)
+	}
+
+	func testGenerateAppcastWithCull() throws {
+		let directory = Bundle.module.url(forResource: "ZipsAppend", withExtension: nil, subdirectory: "TestResources")!
+		let zipsStarterURL = Bundle.module.url(forResource: "expectedZipsResult", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsStarterData = try Data(contentsOf: zipsStarterURL)
+		let zipsExpectationURL = Bundle.module.url(forResource: "expectedZipsAppendWithCullResult", withExtension: "xml", subdirectory: "TestResources")!
+		let zipsExpectation = try XMLDocument(contentsOf: zipsExpectationURL)
+
+		let data = try PKGAppcastGeneratorCore.generateAppcast(
+			fromContentsOfDirectory: directory,
+			previousAppcastData: zipsStarterData,
+			maximumVersionsToRetain: 2,
+			channelTitle: "Appcast",
+			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
+			signatureGenerator: { _ in "Secured! jk"},
+			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
+
+		let xmlDoc = try XMLDocument(data: data)
 		Self.cleanXMLDates(in: xmlDoc)
 
 		XCTAssertEqual(xmlDoc, zipsExpectation)
