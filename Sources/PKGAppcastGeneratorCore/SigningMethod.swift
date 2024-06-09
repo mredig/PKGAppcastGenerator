@@ -52,7 +52,7 @@ public struct SigningMethod {
 			let fileData = try Data(contentsOf: fileToSign)
 			let privateKey = try {
 				let base64 = try Data(contentsOf: keyfileURL)
-				return try Data(base64Encoded: base64).unwrap("invalid base64 data")
+				return try Data(base64Encoded: base64, options: .ignoreUnknownCharacters).unwrap("invalid base64 data")
 			}()
 
 			let signatureData = try Signing.sign(data: fileData, withKey: privateKey)
