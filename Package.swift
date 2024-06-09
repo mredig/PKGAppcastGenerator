@@ -23,6 +23,8 @@ let package = Package(
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
 				"PKGAppcastGeneratorCore",
+				"SwiftPizzaSnips",
+				"EdDSA_Signing",
 			]
         ),
 		.target(
@@ -31,7 +33,9 @@ let package = Package(
 				"XMLCoder",
 				"ZIPFoundation",
 				"SwiftPizzaSnips",
+				"EdDSA_Signing",
 			]),
+		.target(name: "EdDSA_Signing"),
 		.testTarget(
 			name: "PKGAppcastGeneratorCoreTests",
 			dependencies: [
