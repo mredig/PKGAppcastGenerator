@@ -40,6 +40,7 @@ let package = Package(
 			name: "SigningChecker",
 			dependencies: [
 				"EdDSA_Signing",
+				"SwiftPizzaSnips",
 			]
 		),
 		.testTarget(
