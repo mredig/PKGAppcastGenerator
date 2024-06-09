@@ -2,6 +2,8 @@ import Foundation
 import XMLCoder
 import SwiftPizzaSnips
 import ZIPFoundation
+import EdDSA_Signing
+import Security
 
 public enum PKGAppcastGeneratorCore {
 	static let jsonDecoder = JSONDecoder()
@@ -63,6 +65,98 @@ public enum PKGAppcastGeneratorCore {
 			doctype: nil)
 
 		print(String(data: data, encoding: .utf8)!)
+	}
+
+	public static func generateAppcast(
+		fromContentsOfDirectory contentsOfDirectory: URL,
+		previousAppcastData: Data?,
+		maximumVersionsToRetain: Int?,
+		rssChannelTitle: String?,
+		appcastChannelName: String?,
+		downloadsLink: URL?,
+		keychainAccountForSigning: String,
+		downloadURLPrefix: URL
+	) throws -> Data {
+		let signatureGenerator: (URL) throws -> String? = { fileToSign in
+			let keychainSearchAttributes = [
+				kSecClass as String: kSecClassGenericPassword as String,
+				kSecAttrService as String: "https://sparkle-project.org",
+				kSecAttrAccount as String: keychainAccountForSigning,
+				kSecAttrProtocol as String: kSecAttrProtocolSSH as String,
+				kSecReturnData as String: true as CFBoolean,
+			]
+			var keychainItem: CFTypeRef?
+			let successIndicator = SecItemCopyMatching(keychainSearchAttributes as CFDictionary, &keychainItem)
+
+			guard successIndicator == errSecSuccess else { throw SimpleError(message: "Error: \(successIndicator)") }
+			guard
+				let secretB64Data = (keychainItem as? Data),
+				let privateKey = Data(base64Encoded: secretB64Data)
+			else { throw SimpleError(message: "Invalid data") }
+
+			let fileData = try Data(contentsOf: fileToSign)
+
+			let signatureData = try Signing.sign(data: fileData, withKey: privateKey)
+
+			guard
+				try Signing.verify(data: fileData, withSignature: signatureData, forPrivateKey: privateKey)
+			else {
+				print("Failed to verify signing key worked for \(fileToSign.lastPathComponent)")
+				return nil
+			}
+
+			return signatureData.base64EncodedString()
+		}
+
+		return try generateAppcast(
+			fromContentsOfDirectory: contentsOfDirectory,
+			previousAppcastData: previousAppcastData,
+			maximumVersionsToRetain: maximumVersionsToRetain,
+			rssChannelTitle: rssChannelTitle,
+			appcastChannelName: appcastChannelName,
+			downloadsLink: downloadsLink,
+			signatureGenerator: signatureGenerator,
+			downloadURLPrefix: downloadURLPrefix)
+	}
+
+	public static func generateAppcast(
+		fromContentsOfDirectory contentsOfDirectory: URL,
+		previousAppcastData: Data?,
+		maximumVersionsToRetain: Int?,
+		rssChannelTitle: String?,
+		appcastChannelName: String?,
+		downloadsLink: URL?,
+		privateKeyfileForSigning: URL,
+		downloadURLPrefix: URL
+	) throws -> Data {
+		let signatureGenerator: (URL) throws -> String? = { fileToSign in
+			let fileData = try Data(contentsOf: fileToSign)
+			let privateKey = try {
+				let base64 = try Data(contentsOf: privateKeyfileForSigning)
+				return try Data(base64Encoded: base64).unwrap("invalid base64 data")
+			}()
+
+			let signatureData = try Signing.sign(data: fileData, withKey: privateKey)
+
+			guard
+				try Signing.verify(data: fileData, withSignature: signatureData, forPrivateKey: privateKey)
+			else {
+				print("Failed to verify signing key worked for \(fileToSign.lastPathComponent)")
+				return nil
+			}
+
+			return signatureData.base64EncodedString()
+		}
+
+		return try generateAppcast(
+			fromContentsOfDirectory: contentsOfDirectory,
+			previousAppcastData: previousAppcastData,
+			maximumVersionsToRetain: maximumVersionsToRetain,
+			rssChannelTitle: rssChannelTitle,
+			appcastChannelName: appcastChannelName,
+			downloadsLink: downloadsLink,
+			signatureGenerator: signatureGenerator,
+			downloadURLPrefix: downloadURLPrefix)
 	}
 
 	public static func generateAppcast(
