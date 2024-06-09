@@ -20,6 +20,20 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "SigningChecker"
+               BuildableName = "SigningChecker"
+               BlueprintName = "SigningChecker"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -46,8 +60,7 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "/Users/mredig/Developer/PKGAppcastGenerator"
+      useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -56,38 +69,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "PKGAppcastGenerator"
-            BuildableName = "PKGAppcastGenerator"
-            BlueprintName = "PKGAppcastGenerator"
+            BlueprintIdentifier = "SigningChecker"
+            BuildableName = "SigningChecker"
+            BlueprintName = "SigningChecker"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "-e https://s3.us-central-1.wasabisys.com/pizza-downloads/public/PKGAppcastGenerator/sample-appcast.xml"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--downloads-link https://appsby.pizza"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-d https://s3.us-central-1.wasabisys.com/pizza-downloads/public/PKGAppcastGenerator"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--sign-update-key-file CICD_Support/sampleKey.key"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-o appcast.xml"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "&quot;/Users/mredig/Developer/PKGAppcastGenerator/Tests/PKGAppcastGeneratorCoreTests/TestResources/Zips&quot;"
-            isEnabled = "YES">
-         </CommandLineArgument>
-      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -99,9 +86,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "PKGAppcastGenerator"
-            BuildableName = "PKGAppcastGenerator"
-            BlueprintName = "PKGAppcastGenerator"
+            BlueprintIdentifier = "SigningChecker"
+            BuildableName = "SigningChecker"
+            BlueprintName = "SigningChecker"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
