@@ -20,16 +20,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		let openItem = NSMenuItem(title: "Open", action: #selector(openMenuItemSelected), keyEquivalent: "o")
 		fileMenu.submenu?.addItem(openItem)
 
-		let mainMenu = NSMenu(title: "My Swift Script")
+		let editMenu = NSMenuItem()
+		editMenu.submenu = NSMenu()
+		editMenu.title = "Edit"
+
+		let selectAllItem = NSMenuItem(title: "Select All", action: #selector(NSResponder.selectAll), keyEquivalent: "a")
+		editMenu.submenu?.addItem(selectAllItem)
+		let copyItem = NSMenuItem(title: "Copy", action: #selector(NSResponder.copy), keyEquivalent: "c")
+		editMenu.submenu?.addItem(copyItem)
+		let pasteItem = NSMenuItem(title: "Paste", action: #selector(NSText.paste), keyEquivalent: "v")
+		editMenu.submenu?.addItem(pasteItem)
+
+		let mainMenu = NSMenu(title: "Signing Checker")
 		mainMenu.addItem(appMenu)
 		mainMenu.addItem(fileMenu)
+		mainMenu.addItem(editMenu)
 		NSApplication.shared.mainMenu = mainMenu
 
 		let size = CGSize(width: 480, height: 270)
 		window.setContentSize(size)
 		window.styleMask = [.closable, .miniaturizable, .resizable, .titled]
 		window.delegate = windowDelegate
-		window.title = "My Swift Script"
+		window.title = "Signing Checker"
 
 		let view = NSHostingView(rootView: MainSignatureCheckerView(viewModel: vm, delegate: self))
 		view.frame = CGRect(origin: .zero, size: size)
