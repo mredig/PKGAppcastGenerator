@@ -17,7 +17,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: nil,
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -46,7 +46,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: nil,
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -67,7 +67,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -90,7 +90,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -114,7 +114,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let jsonPairedData = try PKGAppcastGeneratorCore.generateAppcast(
@@ -124,7 +124,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: jsonPairedData)
@@ -147,7 +147,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -170,7 +170,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: "beta",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -199,7 +199,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -228,7 +228,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: "beta",
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)
@@ -257,7 +257,7 @@ class GeneratorTests: XCTestCase {
 			rssChannelTitle: "Appcast",
 			appcastChannelName: nil,
 			downloadsLink: URL(string: "https://he.ho.hum/myapps/downloads"),
-			signatureGenerator: { _ in "Secured! jk"},
+			signingMethod: .custom({ _ in "Secured! jk"}),
 			downloadURLPrefix: #URL("https://he.ho.hum/updates/"))
 
 		let xmlDoc = try XMLDocument(data: data)

@@ -132,6 +132,18 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			return data
 		}()
 
+		let signingMethod = {
+			if let signUpdatePath {
+				SigningMethod.custom(signatureGenerator(fileToSign:))
+			} else if let signUpdateKeyFile {
+				SigningMethod.privateKeyfile(signUpdateKeyFile)
+			} else if let signUpdateAccount {
+				SigningMethod.retrieveFromKeychain(account: signUpdateAccount)
+			} else {
+				SigningMethod.custom({ _ in nil })
+			}
+		}()
+
 		let appcastData = try PKGAppcastGeneratorCore.generateAppcast(
 			fromContentsOfDirectory: directory,
 			previousAppcastData: previousData,
@@ -139,13 +151,13 @@ struct PKGAppcastGenerator: AsyncParsableCommand {
 			rssChannelTitle: channelTitle,
 			appcastChannelName: channelName,
 			downloadsLink: downloadsLink,
-			signatureGenerator: signaureGenerator,
+			signingMethod: signingMethod,
 			downloadURLPrefix: downloadURLPrefix)
 
 		try appcastData.write(to: outputPath)
 	}
 
-	private func signaureGenerator(fileToSign: URL) throws -> String? {
+	private func signatureGenerator(fileToSign: URL) throws -> String? {
 		guard let signUpdatePath else { return nil }
 
 		var args: [String] = ["-p"]
