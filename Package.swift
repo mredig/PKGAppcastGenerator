@@ -36,6 +36,12 @@ let package = Package(
 				"EdDSA_Signing",
 			]),
 		.target(name: "EdDSA_Signing"),
+		.executableTarget(
+			name: "SigningChecker",
+			dependencies: [
+				"EdDSA_Signing",
+			]
+		),
 		.testTarget(
 			name: "PKGAppcastGeneratorCoreTests",
 			dependencies: [
